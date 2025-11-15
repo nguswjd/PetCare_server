@@ -14,11 +14,15 @@ public record HospitalDetailResponse(
         boolean hasParking,
         String address,
         List<String> animalTypes,
-        List<String> departments
+        List<String> departments,
+        String imageUrl,
+        String description
 ) {
     public static HospitalDetailResponse from(Hospital hospital) {
         return HospitalDetailResponse.builder()
                 .name(hospital.getName())
+                .imageUrl(hospital.getImageUrl())
+                .description(hospital.getDescription())
                 .status(hospital.getStatus() != null ? hospital.getStatus().name() : null)
                 .holiday(hospital.getHoliday())
                 .hasParking(hospital.isHasParking())
