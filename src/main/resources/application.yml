@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: ${DATABASE_URL:jdbc:mysql://localhost:3306/petCare?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
+    url: ${DATABASE_URL:jdbc:mysql://mysql.railway.internal:3306/railway?useSSL=false&serverTimezone=Asia/Seoul&characterEncoding=UTF-8}
     username: ${DB_USERNAME:root}
-    password: ${DB_PASSWORD:1234}
+    password: ${DB_PASSWORD:tsriWsICIuXHDqOjgRupbOgRvyWKFKVc}
     driver-class-name: com.mysql.cj.jdbc.Driver
 
   jpa:
@@ -10,6 +10,7 @@ spring:
       ddl-auto: update
     properties:
       hibernate:
+        dialect: org.hibernate.dialect.MySQL8Dialect
         format_sql: true
         jdbc:
           time_zone: Asia/Seoul
