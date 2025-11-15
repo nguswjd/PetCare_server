@@ -1,15 +1,5 @@
-FROM gradle:7.6.0-jdk17 AS builder
+FROM openjdk:21-jdk-slim
 WORKDIR /app
-
-USER root
-RUN mkdir -p /home/gradle/.gradle && chown -R gradle:gradle /home/gradle/.gradle
-
-COPY . .
-
-USER gradle
-RUN gradle clean build -x test
-
-FROM azul/zulu-openjdk:17-latest
-VOLUME /tmp
-COPY --from=builder /app/build/libs/*.jar app.jar
-ENTRYPOINT ["java", "-jar", "/app.jar"]
+COPY build/libs/*.jar app.jar
+EXPOSE 8080
+ENTRYPOINT ["java", "-jar", "app.jar"]
