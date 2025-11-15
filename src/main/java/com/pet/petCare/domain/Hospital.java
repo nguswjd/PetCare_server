@@ -1,5 +1,6 @@
 package com.pet.petCare.domain;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.pet.petCare.domain.enums.AnimalType;
 import com.pet.petCare.domain.enums.BusinessStatus;
 import com.pet.petCare.domain.enums.Department;
@@ -20,6 +21,7 @@ public class Hospital {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+
     private String name;
     private String address;
 
@@ -27,9 +29,11 @@ public class Hospital {
     private BusinessStatus status;
 
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("hospital")
     private List<HospitalDepartment> departments = new ArrayList<>();
 
     @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("hospital")
     private List<HospitalAnimalType> animalTypes = new ArrayList<>();
 
     private LocalDate holiday;
