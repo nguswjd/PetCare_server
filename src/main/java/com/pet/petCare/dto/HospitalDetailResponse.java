@@ -1,8 +1,6 @@
 package com.pet.petCare.dto;
 
 import com.pet.petCare.domain.Hospital;
-import com.pet.petCare.domain.HospitalAnimalType;
-import com.pet.petCare.domain.HospitalDepartment;
 import lombok.Builder;
 
 import java.util.List;
@@ -11,15 +9,19 @@ import java.util.List;
 public record HospitalDetailResponse(
         boolean hasParking,
         String address,
-        List<HospitalAnimalType> animalTypes,
-        List<HospitalDepartment> departments
+        List<String> animalTypes,
+        List<String> departments
 ) {
     public static HospitalDetailResponse from(Hospital hospital) {
         return HospitalDetailResponse.builder()
                 .hasParking(hospital.isHasParking())
-                .animalTypes(hospital.getAnimalTypes())
-                .departments(hospital.getDepartments())
                 .address(hospital.getAddress())
+                .animalTypes(hospital.getAnimalTypes().stream()
+                        .map(at -> at.getAnimalType().getDescription())
+                        .toList())
+                .departments(hospital.getDepartments().stream()
+                        .map(d -> d.getDepartment().getDepartment())
+                        .toList())
                 .build();
     }
 }
