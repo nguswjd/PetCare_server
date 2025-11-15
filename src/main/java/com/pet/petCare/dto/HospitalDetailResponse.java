@@ -23,7 +23,7 @@ public record HospitalDetailResponse(
                 .name(hospital.getName())
                 .imageUrl(hospital.getImageUrl())
                 .description(hospital.getDescription())
-                .status(hospital.getStatus() != null ? hospital.getStatus().name() : null)
+                .status(hospital.getStatus() != null ? hospital.getStatus().getDescription() : null)
                 .holiday(hospital.getHoliday())
                 .hasParking(hospital.isHasParking())
                 .address(hospital.getAddress())
