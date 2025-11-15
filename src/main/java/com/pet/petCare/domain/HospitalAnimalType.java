@@ -2,10 +2,12 @@ package com.pet.petCare.domain;
 
 import com.pet.petCare.domain.enums.AnimalType;
 import jakarta.persistence.*;
-import lombok.RequiredArgsConstructor;
+import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Entity
-@RequiredArgsConstructor
+@Getter
+@NoArgsConstructor
 public class HospitalAnimalType {
 
     @Id
