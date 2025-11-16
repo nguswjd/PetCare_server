@@ -1,4 +1,7 @@
 package com.pet.petCare.dto;
 
-public class LoginRequest {
+public record LoginRequest(
+        String username,
+        String password
+) {
 }
