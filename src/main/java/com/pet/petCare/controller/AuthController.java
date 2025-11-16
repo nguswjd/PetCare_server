@@ -14,11 +14,12 @@ import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/api/v1/auth")
 public class AuthController {
 
     private final AuthService authService;
 
-    @PostMapping("/api/v1/auth/signup")
+    @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
         try {
             AuthResponse response = authService.signup(request);
@@ -29,7 +30,7 @@ public class AuthController {
         }
     }
 
-    @PostMapping("/api/v1/auth/login")
+    @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         try {
             AuthResponse response = authService.login(request);
@@ -40,12 +41,12 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/api/v1/auth/animal-types")
+    @GetMapping("/animal-types")
     public AnimalTypeResponse getAnimalTypes() {
         return AnimalTypeResponse.all();
     }
 
-    @GetMapping("/api/v1/auth/breeds/{animalType}")
+    @GetMapping("/breeds/{animalType}")
     public ResponseEntity<?> getBreedsByAnimalType(@PathVariable String animalType) {
         try {
             AnimalType type = AnimalType.valueOf(animalType.toUpperCase());
@@ -53,6 +54,16 @@ public class AuthController {
         } catch (IllegalArgumentException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(AuthResponse.error("유효하지 않은 동물 종류입니다"));
+        }
+    }
+
+    @GetMapping("/check-username")
+    public ResponseEntity<AuthResponse> checkUsername(@RequestParam String username) {
+        if (authService.isUsernameTaken(username)) {
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(AuthResponse.error("이미 사용 중인 아이디입니다."));
+        } else {
+            return ResponseEntity.ok(AuthResponse.success("사용 가능한 아이디입니다.", null));
         }
     }
 }

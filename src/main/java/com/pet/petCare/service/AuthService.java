@@ -117,4 +117,8 @@ public class AuthService {
             throw new RuntimeException("필수항목 입니다.");
         }
     }
+
+    public boolean isUsernameTaken(String username) {
+        return userRepository.existsByUsername(username);
+    }
 }
