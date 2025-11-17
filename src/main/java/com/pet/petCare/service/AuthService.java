@@ -108,6 +108,27 @@ public class AuthService {
         }
     }
 
+    private void validateUsername(String username) {
+        if (username == null || username.isBlank()) {
+            throw new RuntimeException("아이디를 입력해주세요.");
+        }
+        if (username.length() < 4 || username.length() > 15) {
+            throw new RuntimeException("아이디는 4자 이상 15자 이하여야 합니다.");
+        }
+        if (!username.matches("^[a-zA-Z0-9]+$")) {
+            throw new RuntimeException("아이디는 영문자와 숫자만 사용 가능합니다.");
+        }
+    }
+
+    private void validatePhoneNumber(String phoneNumber) {
+        if (phoneNumber == null || phoneNumber.isBlank()) {
+            throw new RuntimeException("휴대폰 번호를 입력해주세요.");
+        }
+        if (!phoneNumber.matches("^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$")) {
+            throw new RuntimeException("올바른 휴대폰 번호 형식이 아닙니다.");
+        }
+    }
+
     // 로그인 검증
     private void validateLoginRequest(LoginRequest request) {
         if (request.username() == null || request.username().isBlank()) {
@@ -119,6 +140,12 @@ public class AuthService {
     }
 
     public boolean isUsernameTaken(String username) {
+        validateUsername(username);
         return userRepository.existsByUsername(username);
+    }
+
+    public boolean isPhoneTaken(String phoneNumber) {
+        validatePhoneNumber(phoneNumber);
+        return userRepository.existsByPhoneNumber(phoneNumber);
     }
 }

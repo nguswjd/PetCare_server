@@ -59,11 +59,31 @@ public class AuthController {
 
     @GetMapping("/check-username")
     public ResponseEntity<AuthResponse> checkUsername(@RequestParam String username) {
-        if (authService.isUsernameTaken(username)) {
-            return ResponseEntity.status(HttpStatus.CONFLICT)
-                    .body(AuthResponse.error("이미 사용 중인 아이디입니다."));
-        } else {
-            return ResponseEntity.ok(AuthResponse.success("사용 가능한 아이디입니다."));
+        try {
+            if (authService.isUsernameTaken(username)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(AuthResponse.error("이미 사용 중인 아이디입니다."));
+            } else {
+                return ResponseEntity.ok(AuthResponse.success("사용 가능한 아이디입니다."));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(AuthResponse.error(e.getMessage()));
+        }
+    }
+
+    @GetMapping("/check-phone")
+    public ResponseEntity<AuthResponse> checkPhone(@RequestParam String phone) {
+        try {
+            if (authService.isPhoneTaken(phone)) {
+                return ResponseEntity.status(HttpStatus.CONFLICT)
+                        .body(AuthResponse.error("이미 등록된 번호입니다."));
+            } else {
+                return ResponseEntity.ok(AuthResponse.success("사용 가능한 번호입니다."));
+            }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(AuthResponse.error(e.getMessage()));
         }
     }
 }
