@@ -63,7 +63,7 @@ public class AuthController {
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(AuthResponse.error("이미 사용 중인 아이디입니다."));
         } else {
-            return ResponseEntity.ok(AuthResponse.success("사용 가능한 아이디입니다.", null));
+            return ResponseEntity.ok(AuthResponse.success("사용 가능한 아이디입니다."));
         }
     }
 }

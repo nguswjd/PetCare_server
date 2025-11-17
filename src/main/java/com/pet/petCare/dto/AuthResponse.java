@@ -28,6 +28,12 @@ public record AuthResponse(
                 .build();
     }
 
+    public static AuthResponse success(String message) {
+        return AuthResponse.builder()
+                .message(message)
+                .build();
+    }
+
     public static AuthResponse error(String message) {
         return AuthResponse.builder()
                 .message(message)
