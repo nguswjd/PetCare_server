@@ -1,9 +1,12 @@
 package com.pet.petCare.service;
 
 import com.pet.petCare.domain.User;
+import com.pet.petCare.domain.enums.AnimalType;
+import com.pet.petCare.domain.enums.Breed;
 import com.pet.petCare.dto.AuthResponse;
 import com.pet.petCare.dto.LoginRequest;
 import com.pet.petCare.dto.SignupRequest;
+import com.pet.petCare.dto.UpdateUserRequest;
 import com.pet.petCare.dto.WithdrawRequest;
 import com.pet.petCare.repository.UserRepository;
 import com.pet.petCare.security.JwtUtil;
@@ -84,6 +87,37 @@ public class AuthService {
         return AuthResponse.success(token, user);
     }
 
+    // 내 정보 수정
+    @Transactional
+    public AuthResponse updateUser(String username, UpdateUserRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        if (request.getName() != null && !request.getName().isBlank()) {
+            user.setName(request.getName());
+        }
+
+        if (request.getPhoneNumber() != null && !request.getPhoneNumber().isBlank()) {
+            if (!request.getPhoneNumber().equals(user.getPhoneNumber()) && isPhoneTaken(request.getPhoneNumber())) {
+                throw new RuntimeException("이미 등록된 번호입니다.");
+            }
+            user.setPhoneNumber(request.getPhoneNumber());
+        }
+
+        if (request.getSpecies() != null && !request.getSpecies().isBlank()) {
+            user.setSpecies(AnimalType.valueOf(request.getSpecies().toUpperCase()));
+            user.setBreed(null);
+        }
+
+        if (request.getBreed() != null && !request.getBreed().isBlank()) {
+            user.setBreed(Breed.valueOf(request.getBreed().toUpperCase()));
+        }
+
+        userRepository.save(user);
+
+        return AuthResponse.success(null, user);
+    }
+
     // 회원가입 검증
     private void validateSignupRequest(SignupRequest request) {
         if (request.name() == null || request.name().isBlank()) {
@@ -149,7 +183,6 @@ public class AuthService {
         validatePhoneNumber(phoneNumber);
         return userRepository.existsByPhoneNumber(phoneNumber);
     }
-
 
     // 로그아웃
     public AuthResponse logout() {

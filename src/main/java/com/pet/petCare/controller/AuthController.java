@@ -39,25 +39,27 @@ public class AuthController {
         }
     }
 
-    @GetMapping("/me")
-    public ResponseEntity<AuthResponse> getCurrentUser(
-            @RequestHeader("Authorization") String authHeader) {
+    @PatchMapping("/me")
+    public ResponseEntity<AuthResponse> updateUser(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody UpdateUserRequest request) {
         try {
             String token = authHeader.substring(7);
-
             String username = jwtUtil.extractUsername(token);
+
             if (username == null || !jwtUtil.validateToken(token, username)) {
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
                         .body(AuthResponse.error("유효하지 않은 토큰입니다."));
             }
 
-            AuthResponse response = authService.getCurrentUser(username);
+            AuthResponse response = authService.updateUser(username, request);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(AuthResponse.error("인증에 실패했습니다."));
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(AuthResponse.error(e.getMessage()));
         }
     }
+
 
     @GetMapping("/animal-types")
     public AnimalTypeResponse getAnimalTypes() {
