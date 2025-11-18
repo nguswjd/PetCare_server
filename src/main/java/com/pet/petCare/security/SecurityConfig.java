@@ -25,8 +25,8 @@ public class SecurityConfig {
                 )
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                );
-
+                )
+                .cors(cors -> cors.configurationSource(corsConfigurationSource()));
         return http.build();
     }
 
