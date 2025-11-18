@@ -39,6 +39,26 @@ public class AuthController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<AuthResponse> getCurrentUser(
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+
+            String username = jwtUtil.extractUsername(token);
+            if (username == null || !jwtUtil.validateToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(AuthResponse.error("유효하지 않은 토큰입니다."));
+            }
+
+            AuthResponse response = authService.getCurrentUser(username);
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(AuthResponse.error("인증에 실패했습니다."));
+        }
+    }
+
     @GetMapping("/animal-types")
     public AnimalTypeResponse getAnimalTypes() {
         return AnimalTypeResponse.all();

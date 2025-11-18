@@ -183,4 +183,19 @@ public class AuthService {
         userRepository.delete(user);
         return AuthResponse.success("회원탈퇴가 완료되었습니다.");
     }
+
+    @Transactional(readOnly = true)
+    public AuthResponse getCurrentUser(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        return AuthResponse.builder()
+                .username(user.getUsername())
+                .name(user.getName())
+                .phoneNumber(user.getPhoneNumber())
+                .species(user.getSpecies())
+                .breed(user.getBreed())
+                .marketingConsent(user.getMarketingConsent())
+                .build();
+    }
 }
