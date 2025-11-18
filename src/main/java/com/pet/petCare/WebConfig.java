@@ -13,6 +13,9 @@ public class WebConfig implements WebMvcConfigurer {
                         "http://localhost:5173",
                         "https://pet-care-2025.vercel.app"
                 )
-                .allowedMethods("GET","POST","PUT","DELETE","OPTIONS");
+                .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS")
+                .allowedHeaders("*")
+                .allowCredentials(true)
+                .exposedHeaders("Authorization");
     }
 }
