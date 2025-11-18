@@ -115,7 +115,8 @@ public class AuthService {
 
         userRepository.save(user);
 
-        return AuthResponse.success(null, user);
+        String token = jwtUtil.generateToken(user.getUsername());
+        return AuthResponse.success(token, user);
     }
 
     // 회원가입 검증
