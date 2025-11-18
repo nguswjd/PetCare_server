@@ -4,6 +4,7 @@ import com.pet.petCare.domain.User;
 import com.pet.petCare.dto.AuthResponse;
 import com.pet.petCare.dto.LoginRequest;
 import com.pet.petCare.dto.SignupRequest;
+import com.pet.petCare.dto.WithdrawRequest;
 import com.pet.petCare.repository.UserRepository;
 import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
@@ -147,5 +148,39 @@ public class AuthService {
     public boolean isPhoneTaken(String phoneNumber) {
         validatePhoneNumber(phoneNumber);
         return userRepository.existsByPhoneNumber(phoneNumber);
+    }
+
+
+    // 로그아웃
+    public AuthResponse logout() {
+        return AuthResponse.success("로그아웃되었습니다.");
+    }
+
+    // 회원탈퇴
+    public AuthResponse withdraw(String username, WithdrawRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        String encodedPassword = encodePassword(request.password());
+        if (!encodedPassword.equals(user.getPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+        }
+
+        userRepository.delete(user);
+
+        return AuthResponse.success("회원탈퇴가 완료되었습니다.");
+    }
+
+    public AuthResponse withdrawHardDelete(String username, WithdrawRequest request) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
+
+        String encodedPassword = encodePassword(request.password());
+        if (!encodedPassword.equals(user.getPassword())) {
+            throw new RuntimeException("비밀번호가 일치하지 않습니다.");
+        }
+
+        userRepository.delete(user);
+        return AuthResponse.success("회원탈퇴가 완료되었습니다.");
     }
 }

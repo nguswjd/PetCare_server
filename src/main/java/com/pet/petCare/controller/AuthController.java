@@ -1,11 +1,8 @@
 package com.pet.petCare.controller;
 
 import com.pet.petCare.domain.enums.AnimalType;
-import com.pet.petCare.dto.AnimalTypeResponse;
-import com.pet.petCare.dto.AuthResponse;
-import com.pet.petCare.dto.BreedFilterResponse;
-import com.pet.petCare.dto.LoginRequest;
-import com.pet.petCare.dto.SignupRequest;
+import com.pet.petCare.dto.*;
+import com.pet.petCare.security.JwtUtil;
 import com.pet.petCare.service.AuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -18,6 +15,7 @@ import org.springframework.web.bind.annotation.*;
 public class AuthController {
 
     private final AuthService authService;
+    private final JwtUtil jwtUtil;
 
     @PostMapping("/signup")
     public ResponseEntity<AuthResponse> signup(@RequestBody SignupRequest request) {
@@ -81,6 +79,47 @@ public class AuthController {
             } else {
                 return ResponseEntity.ok(AuthResponse.success("사용 가능한 번호입니다."));
             }
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(AuthResponse.error(e.getMessage()));
+        }
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<AuthResponse> logout(
+            @RequestHeader("Authorization") String authHeader) {
+        try {
+            String token = authHeader.substring(7);
+
+            String username = jwtUtil.extractUsername(token);
+            if (username == null || !jwtUtil.validateToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(AuthResponse.error("유효하지 않은 토큰입니다."));
+            }
+
+            AuthResponse response = authService.logout();
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(AuthResponse.error("로그아웃 중 오류가 발생했습니다."));
+        }
+    }
+
+    @DeleteMapping("/withdraw")
+    public ResponseEntity<AuthResponse> withdraw(
+            @RequestHeader("Authorization") String authHeader,
+            @RequestBody WithdrawRequest request) {
+        try {
+            String token = authHeader.substring(7);
+
+            String username = jwtUtil.extractUsername(token);
+            if (username == null || !jwtUtil.validateToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(AuthResponse.error("유효하지 않은 토큰입니다."));
+            }
+
+            AuthResponse response = authService.withdraw(username, request);
+            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(AuthResponse.error(e.getMessage()));
