@@ -8,26 +8,23 @@ import java.nio.charset.StandardCharsets;
 public class JwtUtil {
 
     private final String secretKey = "secret";
-    private final long expiration = 1000L * 60 * 60 * 24; // 24시간
+    private final long expiration = 1000L * 60 * 60 * 24;
 
-    // 토큰 생성
     public String generateToken(String username) {
         String payload = username + ":" + System.currentTimeMillis();
         return Base64.getEncoder().encodeToString(payload.getBytes(StandardCharsets.UTF_8));
     }
 
-    // 토큰에서 username 추출
     public String extractUsername(String token) {
         try {
             String decoded = new String(Base64.getDecoder().decode(token), StandardCharsets.UTF_8);
             String[] parts = decoded.split(":");
-            return parts[0]; // username
+            return parts[0];
         } catch (Exception e) {
             return null;
         }
     }
 
-    // 토큰 유효성 확인
     public boolean validateToken(String token, String username) {
         try {
             String decodedUsername = extractUsername(token);
