@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.pet.petCare.domain.enums.AnimalType;
 import com.pet.petCare.domain.enums.BusinessStatus;
 import com.pet.petCare.domain.enums.Department;
+import com.pet.petCare.domain.enums.Breed;
 import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Getter;
@@ -36,6 +37,10 @@ public class Hospital {
     @JsonIgnoreProperties("hospital")
     private List<HospitalAnimalType> animalTypes = new ArrayList<>();
 
+    @OneToMany(mappedBy = "hospital", cascade = CascadeType.ALL)
+    @JsonIgnoreProperties("hospital")
+    private List<HospitalBreed> breeds = new ArrayList<>();
+
     private LocalDate holiday;
 
     private boolean hasParking;
@@ -58,5 +63,10 @@ public class Hospital {
     public void addAnimalType(AnimalType type) {
         HospitalAnimalType ht = new HospitalAnimalType(this, type);
         this.animalTypes.add(ht);
+    }
+
+    public void addBreed(Breed breed) {
+        HospitalBreed hb = new HospitalBreed(this, breed);
+        this.breeds.add(hb);
     }
 }

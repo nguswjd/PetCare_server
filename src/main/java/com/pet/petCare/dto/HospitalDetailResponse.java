@@ -15,6 +15,7 @@ public record HospitalDetailResponse(
         String address,
         List<String> animalTypes,
         List<String> departments,
+        List<String> breeds,
         String imageUrl,
         String description
 ) {
@@ -35,6 +36,11 @@ public record HospitalDetailResponse(
                 .departments(hospital.getDepartments() != null
                         ? hospital.getDepartments().stream()
                         .map(d -> d.getDepartment().getDepartment())
+                        .toList()
+                        : List.of())
+                .breeds(hospital.getBreeds() != null
+                        ? hospital.getBreeds().stream()
+                        .map(b -> b.getBreed().getDescription())
                         .toList()
                         : List.of())
                 .build();
