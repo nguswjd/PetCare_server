@@ -1,30 +1,33 @@
 package com.pet.petCare.security;
 
+import com.pet.petCare.repository.HospitalRepository;
 import com.pet.petCare.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
-import java.util.ArrayList;
+import java.util.Collections;
 
 @Component
 public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtUtil jwtUtil;
     private final UserRepository userRepository;
+    private final HospitalRepository hospitalRepository;
 
-    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository) {
+    public JwtAuthenticationFilter(JwtUtil jwtUtil, UserRepository userRepository, HospitalRepository hospitalRepository) {
         this.jwtUtil = jwtUtil;
         this.userRepository = userRepository;
+        this.hospitalRepository = hospitalRepository;
     }
 
     @Override
@@ -38,20 +41,39 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 String username = jwtUtil.extractUsername(token);
 
                 if (username != null && jwtUtil.validateToken(token, username)) {
-                    var user = userRepository.findByUsername(username)
-                            .orElseThrow(() -> new UsernameNotFoundException("유저를 찾을 수 없습니다."));
+                    var userOptional = userRepository.findByUsername(username);
 
-                    UserDetails userDetails = new org.springframework.security.core.userdetails.User(
-                            user.getUsername(),
-                            user.getPassword(),
-                            new ArrayList<>()
-                    );
+                    if (userOptional.isPresent()) {
+                        var user = userOptional.get();
+                        UserDetails userDetails = new org.springframework.security.core.userdetails.User(
+                                user.getUsername(),
+                                user.getPassword(),
+                                Collections.singletonList(new SimpleGrantedAuthority("ROLE_USER"))
+                        );
 
-                    UsernamePasswordAuthenticationToken authentication =
-                            new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
-                    authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+                        UsernamePasswordAuthenticationToken authentication =
+                                new UsernamePasswordAuthenticationToken(userDetails, null, userDetails.getAuthorities());
+                        authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
 
-                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                        SecurityContextHolder.getContext().setAuthentication(authentication);
+                    } else {
+                        var hospitalOptional = hospitalRepository.findByUsername(username);
+
+                        if (hospitalOptional.isPresent()) {
+                            var hospital = hospitalOptional.get();
+                            UserDetails hospitalDetails = new org.springframework.security.core.userdetails.User(
+                                    hospital.getUsername(),
+                                    hospital.getPassword(),
+                                    Collections.singletonList(new SimpleGrantedAuthority("ROLE_HOSPITAL"))
+                            );
+
+                            UsernamePasswordAuthenticationToken authentication =
+                                    new UsernamePasswordAuthenticationToken(hospitalDetails, null, hospitalDetails.getAuthorities());
+                            authentication.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
+
+                            SecurityContextHolder.getContext().setAuthentication(authentication);
+                        }
+                    }
                 }
             }
         } catch (Exception ex) {
