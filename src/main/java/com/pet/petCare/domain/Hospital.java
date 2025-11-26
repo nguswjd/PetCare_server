@@ -1,9 +1,6 @@
 package com.pet.petCare.domain;
 
-import com.pet.petCare.domain.enums.AnimalType;
-import com.pet.petCare.domain.enums.Breed;
-import com.pet.petCare.domain.enums.Department;
-import com.pet.petCare.domain.enums.HospitalStatus;
+import com.pet.petCare.domain.enums.*;
 import jakarta.persistence.*;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -64,12 +61,21 @@ public class Hospital {
     @ElementCollection
     @CollectionTable(name = "hospital_holidays", joinColumns = @JoinColumn(name = "hospital_id"))
     @Column(name = "holiday")
-    private List<LocalDate> holidays = new ArrayList<>();  // LocalDate로 변경
+    private List<LocalDate> holidays = new ArrayList<>();
+
+    @Column(name = "operating_start_time")
+    private LocalTime operatingStartTime;
+
+    @Column(name = "operating_end_time")
+    private LocalTime operatingEndTime;
+
+    @Column(name = "is_24_hours")
+    private boolean is24Hours = false;
 
     @ElementCollection
-    @CollectionTable(name = "hospital_operating_hours", joinColumns = @JoinColumn(name = "hospital_id"))
-    @Column(name = "operating_hour")
-    private List<LocalTime> operatingHours = new ArrayList<>();
+    @CollectionTable(name = "hospital_break_times", joinColumns = @JoinColumn(name = "hospital_id"))
+    @Column(name = "break_time")
+    private List<LocalTime> breakTimes = new ArrayList<>();
 
     @Enumerated(EnumType.STRING)
     @Column(length = 20)
@@ -105,7 +111,48 @@ public class Hospital {
         this.address = address;
     }
 
-    // Getters and Setters
+    public HospitalOperatingStatus getOperatingStatus() {
+        LocalTime now = LocalTime.now();
+        LocalDate today = LocalDate.now();
+
+        if (holidays != null && holidays.contains(today)) {
+            return HospitalOperatingStatus.CLOSED;
+        }
+
+        if (is24Hours) {
+            if (breakTimes != null) {
+                for (LocalTime breakStart : breakTimes) {
+                    LocalTime breakEnd = breakStart.plusHours(1);
+                    if (!now.isBefore(breakStart) && now.isBefore(breakEnd)) {
+                        return HospitalOperatingStatus.BREAK;
+                    }
+                }
+            }
+            return HospitalOperatingStatus.OPEN;
+        }
+
+        if (operatingStartTime == null || operatingEndTime == null) {
+            return HospitalOperatingStatus.CLOSED;
+        }
+
+        boolean isOperatingTime = !now.isBefore(operatingStartTime) && !now.isAfter(operatingEndTime);
+
+        if (!isOperatingTime) {
+            return HospitalOperatingStatus.CLOSED;
+        }
+
+        if (breakTimes != null) {
+            for (LocalTime breakStart : breakTimes) {
+                LocalTime breakEnd = breakStart.plusHours(1);
+                if (!now.isBefore(breakStart) && now.isBefore(breakEnd)) {
+                    return HospitalOperatingStatus.BREAK;
+                }
+            }
+        }
+
+        return HospitalOperatingStatus.OPEN;
+    }
+
     public Long getId() {
         return id;
     }
@@ -210,12 +257,36 @@ public class Hospital {
         this.holidays = holidays;
     }
 
-    public List<LocalTime> getOperatingHours() {
-        return operatingHours;
+    public LocalTime getOperatingStartTime() {
+        return operatingStartTime;
     }
 
-    public void setOperatingHours(List<LocalTime> operatingHours) {
-        this.operatingHours = operatingHours;
+    public void setOperatingStartTime(LocalTime operatingStartTime) {
+        this.operatingStartTime = operatingStartTime;
+    }
+
+    public LocalTime getOperatingEndTime() {
+        return operatingEndTime;
+    }
+
+    public void setOperatingEndTime(LocalTime operatingEndTime) {
+        this.operatingEndTime = operatingEndTime;
+    }
+
+    public boolean isIs24Hours() {
+        return is24Hours;
+    }
+
+    public void setIs24Hours(boolean is24Hours) {
+        this.is24Hours = is24Hours;
+    }
+
+    public List<LocalTime> getBreakTimes() {
+        return breakTimes;
+    }
+
+    public void setBreakTimes(List<LocalTime> breakTimes) {
+        this.breakTimes = breakTimes;
     }
 
     public HospitalStatus getStatus() {

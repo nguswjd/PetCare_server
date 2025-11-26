@@ -22,7 +22,12 @@ public record HospitalSignupRequest(
         List<AnimalType> animalTypes,
         List<Breed> breeds,
         List<LocalDate> holidays,
-        List<LocalTime> operatingHours,
+
+        LocalTime operatingStartTime,
+        LocalTime operatingEndTime,
+        Boolean is24Hours,
+        List<LocalTime> breakTimes,
+
         String imageUrl,
         String description
 ) {}

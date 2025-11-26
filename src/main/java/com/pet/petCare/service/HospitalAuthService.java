@@ -79,9 +79,20 @@ public class HospitalAuthService {
         if (request.holidays() != null && !request.holidays().isEmpty()) {
             hospital.setHolidays(request.holidays());
         }
-        if (request.operatingHours() != null && !request.operatingHours().isEmpty()) {
-            hospital.setOperatingHours(request.operatingHours());
+
+        if (request.operatingStartTime() != null) {
+            hospital.setOperatingStartTime(request.operatingStartTime());
         }
+        if (request.operatingEndTime() != null) {
+            hospital.setOperatingEndTime(request.operatingEndTime());
+        }
+        if (request.is24Hours() != null) {
+            hospital.setIs24Hours(request.is24Hours());
+        }
+        if (request.breakTimes() != null && !request.breakTimes().isEmpty()) {
+            hospital.setBreakTimes(request.breakTimes());
+        }
+
         if (request.imageUrl() != null && !request.imageUrl().isBlank()) {
             hospital.setImageUrl(request.imageUrl());
         }
@@ -120,8 +131,20 @@ public class HospitalAuthService {
             hospital.setHolidays(request.holidays());
         }
 
-        if (request.operatingHours() != null) {
-            hospital.setOperatingHours(request.operatingHours());
+        if (request.operatingStartTime() != null) {
+            hospital.setOperatingStartTime(request.operatingStartTime());
+        }
+
+        if (request.operatingEndTime() != null) {
+            hospital.setOperatingEndTime(request.operatingEndTime());
+        }
+
+        if (request.is24Hours() != null) {
+            hospital.setIs24Hours(request.is24Hours());
+        }
+
+        if (request.breakTimes() != null) {
+            hospital.setBreakTimes(request.breakTimes());
         }
 
         if (request.imageUrl() != null) {
@@ -172,7 +195,12 @@ public class HospitalAuthService {
                 .animalTypes(hospital.getAnimalTypes())
                 .breeds(hospital.getBreeds())
                 .holidays(hospital.getHolidays())
-                .operatingHours(hospital.getOperatingHours())
+
+                .operatingStartTime(hospital.getOperatingStartTime())
+                .operatingEndTime(hospital.getOperatingEndTime())
+                .is24Hours(hospital.isIs24Hours())
+                .breakTimes(hospital.getBreakTimes())
+
                 .imageUrl(hospital.getImageUrl())
                 .description(hospital.getDescription())
                 .build();

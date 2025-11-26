@@ -25,8 +25,11 @@ public record HospitalAuthResponse(
         List<Department> departments,
         List<AnimalType> animalTypes,
         List<Breed> breeds,
-        List<LocalDate> holidays,  // LocalDate로 변경
-        List<LocalTime> operatingHours,
+        List<LocalDate> holidays,
+        LocalTime operatingStartTime,
+        LocalTime operatingEndTime,
+        Boolean is24Hours,
+        List<LocalTime> breakTimes,
         String imageUrl,
         String description,
         String message
@@ -46,7 +49,10 @@ public record HospitalAuthResponse(
                 .animalTypes(hospital.getAnimalTypes())
                 .breeds(hospital.getBreeds())
                 .holidays(hospital.getHolidays())
-                .operatingHours(hospital.getOperatingHours())
+                .operatingStartTime(hospital.getOperatingStartTime())
+                .operatingEndTime(hospital.getOperatingEndTime())
+                .is24Hours(hospital.isIs24Hours())
+                .breakTimes(hospital.getBreakTimes())
                 .imageUrl(hospital.getImageUrl())
                 .description(hospital.getDescription())
                 .build();

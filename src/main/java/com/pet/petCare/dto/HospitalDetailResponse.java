@@ -14,14 +14,18 @@ import java.util.stream.Collectors;
 @Builder
 public record HospitalDetailResponse(
         String name,
-        String status,
+        String approvalStatus,
+        String operatingStatus,
         boolean hasParking,
         String address,
         List<String> animalTypes,
         List<String> departments,
         List<String> breeds,
         List<LocalDate> holidays,
-        List<LocalTime> operatingHours,
+        LocalTime operatingStartTime,
+        LocalTime operatingEndTime,
+        boolean is24Hours,
+        List<LocalTime> breakTimes,
         String imageUrl,
         String description
 ) {
@@ -30,7 +34,10 @@ public record HospitalDetailResponse(
                 .name(hospital.getName())
                 .imageUrl(hospital.getImageUrl())
                 .description(hospital.getDescription())
-                .status(hospital.getStatus() != null ? hospital.getStatus().getDescription() : null)
+                .approvalStatus(hospital.getStatus() != null
+                        ? hospital.getStatus().getDescription()
+                        : null)
+                .operatingStatus(hospital.getOperatingStatus().getDescription())
                 .hasParking(hospital.isHasParking())
                 .address(hospital.getAddress())
                 .animalTypes(hospital.getAnimalTypes() != null
@@ -48,8 +55,15 @@ public record HospitalDetailResponse(
                         .map(Breed::getDescription)
                         .collect(Collectors.toList())
                         : List.of())
-                .holidays(hospital.getHolidays() != null ? hospital.getHolidays() : List.of())
-                .operatingHours(hospital.getOperatingHours() != null ? hospital.getOperatingHours() : List.of())
+                .holidays(hospital.getHolidays() != null
+                        ? hospital.getHolidays()
+                        : List.of())
+                .operatingStartTime(hospital.getOperatingStartTime())
+                .operatingEndTime(hospital.getOperatingEndTime())
+                .is24Hours(hospital.isIs24Hours())
+                .breakTimes(hospital.getBreakTimes() != null
+                        ? hospital.getBreakTimes()
+                        : List.of())
                 .build();
     }
 }
