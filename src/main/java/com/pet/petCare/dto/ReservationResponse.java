@@ -18,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReservationResponseDto {
+public class ReservationResponse {
 
     private Long id;
     private Long userId;
@@ -35,8 +35,8 @@ public class ReservationResponseDto {
     private ReservationStatus status;
     private LocalDateTime createdAt;
 
-    public static ReservationResponseDto from(Reservation reservation) {
-        return ReservationResponseDto.builder()
+    public static ReservationResponse from(Reservation reservation) {
+        return ReservationResponse.builder()
                 .id(reservation.getId())
                 .userId(reservation.getUser().getId())
                 .hospitalId(reservation.getHospital().getId())

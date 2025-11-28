@@ -1,7 +1,5 @@
 package com.pet.petCare.dto;
 
-import com.pet.petCare.domain.enums.AnimalType;
-import com.pet.petCare.domain.enums.Breed;
 import com.pet.petCare.domain.enums.Department;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -10,20 +8,18 @@ import lombok.NoArgsConstructor;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
+import java.util.List;
 
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class ReservationRequestDto {
+public class AvailableTimesResponse {
 
     private Long hospitalId;
-    private String reserverName;
-    private AnimalType animalType;
-    private Breed breed;
-    private Integer age;
-    private Integer weight;
+    private LocalDate date;
     private Department department;
-    private LocalDate reservationDate;
-    private LocalTime reservationTime;
+    private String departmentDescription;
+    private List<LocalTime> availableTimes;
+    private List<LocalTime> bookedTimes;
 }

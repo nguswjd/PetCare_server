@@ -128,7 +128,7 @@ public class Hospital {
                     }
                 }
             }
-            return HospitalOperatingStatus.OPEN;
+            return HospitalOperatingStatus.OPEN_24H;
         }
 
         if (operatingStartTime == null || operatingEndTime == null) {

@@ -5,9 +5,9 @@ import com.pet.petCare.domain.User;
 import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.domain.enums.Department;
 import com.pet.petCare.domain.enums.ReservationStatus;
-import com.pet.petCare.dto.ReservationRequestDto;
-import com.pet.petCare.dto.ReservationResponseDto;
-import com.pet.petCare.dto.AvailableTimesResponseDto;
+import com.pet.petCare.dto.ReservationRequest;
+import com.pet.petCare.dto.ReservationResponse;
+import com.pet.petCare.dto.AvailableTimesResponse;
 import com.pet.petCare.repository.ReservationRepository;
 import com.pet.petCare.repository.UserRepository;
 import com.pet.petCare.repository.HospitalRepository;
@@ -32,7 +32,7 @@ public class ReservationService {
     private final HospitalRepository hospitalRepository;
 
     @Transactional
-    public ReservationResponseDto createReservation(ReservationRequestDto requestDto, String username) {
+    public ReservationResponse createReservation(ReservationRequest requestDto, String username) {
         validateReservationRequest(requestDto);
 
         User user = userRepository.findByUsername(username)
@@ -72,10 +72,10 @@ public class ReservationService {
 
         Reservation savedReservation = reservationRepository.save(reservation);
 
-        return ReservationResponseDto.from(savedReservation);
+        return ReservationResponse.from(savedReservation);
     }
 
-    public AvailableTimesResponseDto getAvailableTimes(Long hospitalId, LocalDate date, String departmentStr) {
+    public AvailableTimesResponse getAvailableTimes(Long hospitalId, LocalDate date, String departmentStr) {
         hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
 
@@ -93,7 +93,7 @@ public class ReservationService {
                 .filter(time -> !bookedTimes.contains(time))
                 .collect(Collectors.toList());
 
-        return AvailableTimesResponseDto.builder()
+        return AvailableTimesResponse.builder()
                 .hospitalId(hospitalId)
                 .date(date)
                 .department(department)
@@ -104,7 +104,7 @@ public class ReservationService {
     }
 
     @Transactional
-    public ReservationResponseDto cancelReservation(Long reservationId, String username) {
+    public ReservationResponse cancelReservation(Long reservationId, String username) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
@@ -113,10 +113,10 @@ public class ReservationService {
 
         reservation.cancel();
 
-        return ReservationResponseDto.from(reservation);
+        return ReservationResponse.from(reservation);
     }
 
-    private void validateReservationRequest(ReservationRequestDto requestDto) {
+    private void validateReservationRequest(ReservationRequest requestDto) {
         if (requestDto.getHospitalId() == null) {
             throw new IllegalArgumentException("병원 ID는 필수입니다.");
         }
