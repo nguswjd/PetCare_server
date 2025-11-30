@@ -1,0 +1,10 @@
+services:
+  local-mysql:
+    image: mysql
+    container_name: petcare-mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: 1234
+      MYSQL_DATABASE: petcare
+    ports:
+      - "3308:3306"
+    platform: linux/arm64
