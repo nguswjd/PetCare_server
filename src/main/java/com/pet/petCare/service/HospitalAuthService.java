@@ -165,14 +165,27 @@ public class HospitalAuthService {
     public HospitalAuthResponse login(HospitalLoginRequest request) {
         validateLoginRequest(request);
 
+        System.out.println("===== Hospital Login Attempt =====");
+        System.out.println("요청 username: " + request.username());
+        System.out.println("요청 password(평문): " + request.password());
+
         Hospital hospital = hospitalRepository.findByUsername(request.username())
-                .orElseThrow(() -> new RuntimeException("병원을 찾을 수 없습니다."));
+                .orElseThrow(() -> {
+                    System.out.println("병원을 찾을 수 없습니다: " + request.username());
+                    return new RuntimeException("병원을 찾을 수 없습니다.");
+                });
+
+        System.out.println("DB 저장된 password: " + hospital.getPassword());
 
         String encodedPassword = encodePassword(request.password());
+        System.out.println("암호화된 요청 password: " + encodedPassword);
+
         if (!encodedPassword.equals(hospital.getPassword())) {
+            System.out.println("비밀번호 불일치!");
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
+        System.out.println("로그인 성공: " + hospital.getUsername());
         String token = jwtUtil.generateToken(hospital.getUsername());
         return HospitalAuthResponse.success(token, hospital);
     }
