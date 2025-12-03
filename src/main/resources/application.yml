@@ -21,8 +21,3 @@ spring:
 jwt:
   secret: ${JWT_SECRET:petCareSecretKeyForJWTTokenGenerationMustBeLongEnoughForHS256Algorithm}
   expiration: ${JWT_EXPIRATION:86400000}
-
-cloudinary:
-  cloud-name: ${CLOUDINARY_CLOUD_NAME}
-  api-key: ${CLOUDINARY_API_KEY}
-  api-secret: ${CLOUDINARY_API_SECRET}
