@@ -37,7 +37,7 @@ public record HospitalDetailResponse(
                 .approvalStatus(hospital.getStatus() != null
                         ? hospital.getStatus().getDescription()
                         : null)
-                .operatingStatus(hospital.getOperatingStatus().getDescription())
+                .operatingStatus(hospital.getOperatingStatus().name())
                 .hasParking(hospital.isHasParking())
                 .address(hospital.getAddress())
                 .animalTypes(hospital.getAnimalTypes() != null
