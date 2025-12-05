@@ -1,5 +1,7 @@
 package com.pet.petCare.domain.enums;
 
+import com.fasterxml.jackson.annotation.JsonValue;
+
 public enum HospitalOperatingStatus {
     OPEN("운영 중"),
     OPEN_24H("24시간 운영"),
@@ -12,6 +14,7 @@ public enum HospitalOperatingStatus {
         this.description = description;
     }
 
+    @JsonValue
     public String getDescription() {
         return description;
     }

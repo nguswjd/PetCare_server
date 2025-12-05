@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @Service
 @Transactional
@@ -22,6 +23,11 @@ public class HospitalService {
     public HospitalDetailResponse getHospital(Long hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId).orElseThrow();
         return HospitalDetailResponse.from(hospital);
+    }
+
+    // 검색 메서드 추가
+    public List<Hospital> searchHospitals(String keyword) {
+        return hospitalRepository.findByNameContainingOrAddressContaining(keyword, keyword);
     }
 
     public Hospital registerHospital(Hospital hospital, MultipartFile imageFile) throws IOException {

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.List;
 
 @RestController
 @RequiredArgsConstructor
@@ -19,6 +20,13 @@ public class HospitalController {
     @GetMapping("/api/v1/hospital/{id}")
     public HospitalDetailResponse getHospitalDetail(@PathVariable Long id) {
         return hospitalService.getHospital(id);
+    }
+
+    // 병원 검색 API 추가
+    @GetMapping("/api/v1/hospitals/search")
+    public ResponseEntity<List<Hospital>> searchHospitals(@RequestParam String keyword) {
+        List<Hospital> hospitals = hospitalService.searchHospitals(keyword);
+        return ResponseEntity.ok(hospitals);
     }
 
     @PostMapping(value = "/api/v1/hospitals", consumes = {"multipart/form-data"})

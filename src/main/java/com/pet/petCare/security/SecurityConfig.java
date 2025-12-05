@@ -30,12 +30,17 @@ public class SecurityConfig {
                 .csrf(csrf -> csrf.disable())
                 .authorizeHttpRequests(auth -> auth
                         .requestMatchers(HttpMethod.GET, "/api/v1/hospital/**").permitAll()
+                        .requestMatchers(HttpMethod.GET, "/api/v1/hospitals/**").permitAll()
+
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/hospital/auth/signup").permitAll()
                         .requestMatchers("/api/v1/hospital/auth/login").permitAll()
                         .requestMatchers("/api/v1/hospital/auth/check-*").permitAll()
+
                         .requestMatchers("/api/v1/hospital/auth/**").authenticated()
+
                         .requestMatchers("/api/v1/reservations/**").authenticated()
+
                         .anyRequest().authenticated()
                 )
                 .sessionManagement(session ->
@@ -51,10 +56,6 @@ public class SecurityConfig {
     public CorsConfigurationSource corsConfigurationSource() {
         CorsConfiguration configuration = new CorsConfiguration();
         configuration.setAllowedOriginPatterns(Arrays.asList("*"));
-        configuration.setAllowedOrigins(Arrays.asList(
-                "http://localhost:5173",
-                "https://pet-care-2025.vercel.app"
-        ));
         configuration.setAllowedMethods(Arrays.asList(
                 "GET", "POST", "PATCH", "PUT", "DELETE", "OPTIONS"
         ));

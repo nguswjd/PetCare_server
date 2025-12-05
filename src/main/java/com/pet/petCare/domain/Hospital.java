@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
 @Table(name = "hospitals")
@@ -111,6 +112,8 @@ public class Hospital {
         this.address = address;
     }
 
+    @JsonProperty("operatingStatus")
+    @Transient
     public HospitalOperatingStatus getOperatingStatus() {
         LocalTime now = LocalTime.now();
         LocalDate today = LocalDate.now();
