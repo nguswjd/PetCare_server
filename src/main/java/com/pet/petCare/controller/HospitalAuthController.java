@@ -7,6 +7,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
 
 @RestController
 @RequiredArgsConstructor
@@ -16,14 +19,19 @@ public class HospitalAuthController {
     private final HospitalAuthService hospitalAuthService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping("/signup")
-    public ResponseEntity<HospitalAuthResponse> signup(@RequestBody HospitalSignupRequest request) {
+    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
+    public ResponseEntity<HospitalAuthResponse> signup(
+            @RequestPart("hospital") HospitalSignupRequest request,
+            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
         try {
-            HospitalAuthResponse response = hospitalAuthService.signup(request);
+            HospitalAuthResponse response = hospitalAuthService.signup(request, imageFile);
             return ResponseEntity.status(HttpStatus.CREATED).body(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(HospitalAuthResponse.error(e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(HospitalAuthResponse.error("이미지 업로드 중 오류가 발생했습니다."));
         }
     }
 
