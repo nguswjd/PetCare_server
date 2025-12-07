@@ -5,6 +5,7 @@ import com.pet.petCare.security.JwtUtil;
 import com.pet.petCare.service.HospitalAuthService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -12,165 +13,175 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 
 @RestController
-@RequiredArgsConstructor
 @RequestMapping("/api/v1/hospital/auth")
+@RequiredArgsConstructor
 public class HospitalAuthController {
 
     private final HospitalAuthService hospitalAuthService;
     private final JwtUtil jwtUtil;
 
-    @PostMapping(value = "/signup", consumes = {"multipart/form-data"})
-    public ResponseEntity<HospitalAuthResponse> signup(
-            @RequestPart("hospital") HospitalSignupRequest request,
-            @RequestPart(value = "image", required = false) MultipartFile imageFile) {
+    @PostMapping(value = "/signup", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> signup(
+            @RequestParam("representativeName") String representativeName,
+            @RequestParam("username") String username,
+            @RequestParam("password") String password,
+            @RequestParam("name") String name,
+            @RequestParam("hospitalNumber") String hospitalNumber,
+            @RequestParam("businessRegistrationNumber") String businessRegistrationNumber,
+            @RequestParam("address") String address,
+            @RequestParam(value = "hasParking", required = false) Boolean hasParking,
+            @RequestParam(value = "departments", required = false) String departments,
+            @RequestParam(value = "animalTypes", required = false) String animalTypes,
+            @RequestParam(value = "breeds", required = false) String breeds,
+            @RequestParam(value = "holidays", required = false) String holidays,
+            @RequestParam(value = "operatingStartTime", required = false) String operatingStartTime,
+            @RequestParam(value = "operatingEndTime", required = false) String operatingEndTime,
+            @RequestParam(value = "breakTimes", required = false) String breakTimes,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+    ) {
         try {
+            HospitalSignupRequest request = new HospitalSignupRequest(
+                    representativeName,
+                    username,
+                    password,
+                    name,
+                    hospitalNumber,
+                    businessRegistrationNumber,
+                    address,
+                    hasParking,
+                    departments,
+                    animalTypes,
+                    breeds,
+                    holidays,
+                    operatingStartTime,
+                    operatingEndTime,
+                    null,
+                    breakTimes,
+                    null,
+                    description
+            );
+
             HospitalAuthResponse response = hospitalAuthService.signup(request, imageFile);
-            return ResponseEntity.status(HttpStatus.CREATED).body(response);
+            return ResponseEntity.ok(response);
+
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         } catch (IOException e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(HospitalAuthResponse.error("이미지 업로드 중 오류가 발생했습니다."));
+                    .body(new ErrorResponse("이미지 업로드 중 오류가 발생했습니다."));
         }
     }
 
     @PostMapping("/login")
-    public ResponseEntity<HospitalAuthResponse> login(@RequestBody HospitalLoginRequest request) {
+    public ResponseEntity<?> login(@RequestBody HospitalLoginRequest request) {
         try {
             HospitalAuthResponse response = hospitalAuthService.login(request);
             return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
-        }
-    }
-
-    @GetMapping("/me")
-    public ResponseEntity<HospitalAuthResponse> getCurrentHospital(
-            @RequestHeader("Authorization") String authHeader) {
-        try {
-            String token = authHeader.substring(7);
-            String username = jwtUtil.extractUsername(token);
-
-            if (username == null || !jwtUtil.validateToken(token, username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(HospitalAuthResponse.error("유효하지 않은 토큰입니다."));
-            }
-
-            HospitalAuthResponse response = hospitalAuthService.getCurrentHospital(username);
-            return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                    .body(HospitalAuthResponse.error("인증에 실패했습니다."));
-        }
-    }
-
-    @PatchMapping("/details")
-    public ResponseEntity<HospitalAuthResponse> updateDetails(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody HospitalDetailRequest request) {
-        try {
-            String token = authHeader.substring(7);
-            String username = jwtUtil.extractUsername(token);
-
-            if (username == null || !jwtUtil.validateToken(token, username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(HospitalAuthResponse.error("유효하지 않은 토큰입니다."));
-            }
-
-            HospitalAuthResponse response = hospitalAuthService.updateDetails(username, request);
-            return ResponseEntity.ok(response);
-        } catch (RuntimeException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
     @GetMapping("/check-username")
-    public ResponseEntity<HospitalAuthResponse> checkUsername(@RequestParam String username) {
+    public ResponseEntity<?> checkUsername(@RequestParam String username) {
         try {
-            if (hospitalAuthService.isUsernameTaken(username)) {
+            boolean isTaken = hospitalAuthService.isUsernameTaken(username);
+            if (isTaken) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(HospitalAuthResponse.error("이미 사용 중인 아이디입니다."));
-            } else {
-                return ResponseEntity.ok(HospitalAuthResponse.success("사용 가능한 아이디입니다."));
+                        .body(new ErrorResponse("이미 사용 중인 아이디입니다."));
             }
+            return ResponseEntity.ok(new SuccessResponse("사용 가능한 아이디입니다."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
     @GetMapping("/check-hospital-number")
-    public ResponseEntity<HospitalAuthResponse> checkHospitalNumber(@RequestParam String hospitalNumber) {
+    public ResponseEntity<?> checkHospitalNumber(@RequestParam String hospitalNumber) {
         try {
-            if (hospitalAuthService.isHospitalNumberTaken(hospitalNumber)) {
+            boolean isTaken = hospitalAuthService.isHospitalNumberTaken(hospitalNumber);
+            if (isTaken) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(HospitalAuthResponse.error("이미 등록된 사업장번호입니다."));
-            } else {
-                return ResponseEntity.ok(HospitalAuthResponse.success("사용 가능한 사업장번호입니다."));
+                        .body(new ErrorResponse("이미 등록된 병원 번호입니다."));
             }
+            return ResponseEntity.ok(new SuccessResponse("사용 가능한 병원 번호입니다."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
     @GetMapping("/check-business-number")
-    public ResponseEntity<HospitalAuthResponse> checkBusinessNumber(
-            @RequestParam String businessRegistrationNumber) {
+    public ResponseEntity<?> checkBusinessNumber(@RequestParam String businessRegistrationNumber) {
         try {
-            if (hospitalAuthService.isBusinessRegistrationNumberTaken(businessRegistrationNumber)) {
+            boolean isTaken = hospitalAuthService.isBusinessRegistrationNumberTaken(businessRegistrationNumber);
+            if (isTaken) {
                 return ResponseEntity.status(HttpStatus.CONFLICT)
-                        .body(HospitalAuthResponse.error("이미 등록된 사업자등록번호입니다."));
-            } else {
-                return ResponseEntity.ok(HospitalAuthResponse.success("사용 가능한 사업자등록번호입니다."));
+                        .body(new ErrorResponse("이미 등록된 사업자 번호입니다."));
             }
+            return ResponseEntity.ok(new SuccessResponse("사용 가능한 사업자 번호입니다."));
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
         }
     }
 
-    @PostMapping("/logout")
-    public ResponseEntity<HospitalAuthResponse> logout(
-            @RequestHeader("Authorization") String authHeader) {
+    @PutMapping(value = "/update-details", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> updateDetails(
+            @RequestHeader("Authorization") String authorization,
+            @RequestParam(value = "representativeName", required = false) String representativeName,
+            @RequestParam(value = "name", required = false) String name,
+            @RequestParam(value = "hospitalNumber", required = false) String hospitalNumber,
+            @RequestParam(value = "address", required = false) String address,
+            @RequestParam(value = "hasParking", required = false) Boolean hasParking,
+            @RequestParam(value = "departments", required = false) String departments,
+            @RequestParam(value = "animalTypes", required = false) String animalTypes,
+            @RequestParam(value = "breeds", required = false) String breeds,
+            @RequestParam(value = "holidays", required = false) String holidays,
+            @RequestParam(value = "operatingStartTime", required = false) String operatingStartTime,
+            @RequestParam(value = "operatingEndTime", required = false) String operatingEndTime,
+            @RequestParam(value = "is24Hours", required = false) Boolean is24Hours,
+            @RequestParam(value = "breakTimes", required = false) String breakTimes,
+            @RequestParam(value = "description", required = false) String description,
+            @RequestParam(value = "imageFile", required = false) MultipartFile imageFile
+    ) {
         try {
-            String token = authHeader.substring(7);
+            String token = authorization.replace("Bearer ", "");
             String username = jwtUtil.extractUsername(token);
 
-            if (username == null || !jwtUtil.validateToken(token, username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(HospitalAuthResponse.error("유효하지 않은 토큰입니다."));
-            }
+            HospitalUpdateRequest request = new HospitalUpdateRequest(
+                    representativeName,
+                    name,
+                    hospitalNumber,
+                    address,
+                    hasParking,
+                    departments,
+                    animalTypes,
+                    breeds,
+                    holidays,
+                    operatingStartTime,
+                    operatingEndTime,
+                    is24Hours,
+                    breakTimes,
+                    description
+            );
 
-            HospitalAuthResponse response = hospitalAuthService.logout();
+            HospitalAuthResponse response = hospitalAuthService.updateDetailsWithImage(username, request, imageFile);
             return ResponseEntity.ok(response);
-        } catch (Exception e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error("로그아웃 중 오류가 발생했습니다."));
-        }
-    }
 
-    @DeleteMapping("/withdraw")
-    public ResponseEntity<HospitalAuthResponse> withdraw(
-            @RequestHeader("Authorization") String authHeader,
-            @RequestBody HospitalWithdrawRequest request) {
-        try {
-            String token = authHeader.substring(7);
-            String username = jwtUtil.extractUsername(token);
-
-            if (username == null || !jwtUtil.validateToken(token, username)) {
-                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
-                        .body(HospitalAuthResponse.error("유효하지 않은 토큰입니다."));
-            }
-
-            HospitalAuthResponse response = hospitalAuthService.withdraw(username, request);
-            return ResponseEntity.ok(response);
         } catch (RuntimeException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(HospitalAuthResponse.error(e.getMessage()));
+                    .body(new ErrorResponse(e.getMessage()));
+        } catch (IOException e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(new ErrorResponse("이미지 업로드 중 오류가 발생했습니다."));
         }
     }
+
+    private record ErrorResponse(String message) {}
+    private record SuccessResponse(String message) {}
 }

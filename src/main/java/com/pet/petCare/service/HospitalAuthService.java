@@ -1,6 +1,9 @@
 package com.pet.petCare.service;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.pet.petCare.domain.Hospital;
+import com.pet.petCare.domain.enums.*;
 import com.pet.petCare.dto.*;
 import com.pet.petCare.repository.HospitalRepository;
 import com.pet.petCare.security.JwtUtil;
@@ -11,6 +14,11 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.time.LocalDate;
+import java.time.LocalTime;
+import java.util.Collections;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -21,6 +29,7 @@ public class HospitalAuthService {
     private final S3Service s3Service;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
+    private final ObjectMapper objectMapper;
 
     public HospitalAuthResponse signup(HospitalSignupRequest request, MultipartFile imageFile) throws IOException {
         validateSignupRequest(request);
@@ -52,6 +61,114 @@ public class HospitalAuthService {
         if (imageFile != null && !imageFile.isEmpty()) {
             String imageUrl = s3Service.uploadImage(imageFile, "hospitals");
             hospital.setImageUrl(imageUrl);
+        }
+
+        if (request.hasParking() != null) {
+            hospital.setHasParking(request.hasParking());
+        }
+
+        if (request.departments() != null && !request.departments().isEmpty()) {
+            try {
+                List<String> departmentStrings = objectMapper.readValue(
+                        request.departments(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<Department> departments = departmentStrings.stream()
+                        .map(Department::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setDepartments(departments);
+            } catch (Exception e) {
+                System.err.println("진료 항목 파싱 실패: " + e.getMessage());
+                hospital.setDepartments(Collections.emptyList());
+            }
+        }
+
+        if (request.animalTypes() != null && !request.animalTypes().isEmpty()) {
+            try {
+                List<String> animalTypeStrings = objectMapper.readValue(
+                        request.animalTypes(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<AnimalType> animalTypes = animalTypeStrings.stream()
+                        .map(AnimalType::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setAnimalTypes(animalTypes);
+            } catch (Exception e) {
+                System.err.println("동물 종류 파싱 실패: " + e.getMessage());
+                hospital.setAnimalTypes(Collections.emptyList());
+            }
+        }
+
+        if (request.breeds() != null && !request.breeds().isEmpty()) {
+            try {
+                List<String> breedStrings = objectMapper.readValue(
+                        request.breeds(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<Breed> breeds = breedStrings.stream()
+                        .map(Breed::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setBreeds(breeds);
+            } catch (Exception e) {
+                System.err.println("품종 파싱 실패: " + e.getMessage());
+                hospital.setBreeds(Collections.emptyList());
+            }
+        }
+
+        if (request.holidays() != null && !request.holidays().isEmpty()) {
+            try {
+                List<String> holidayStrings = objectMapper.readValue(
+                        request.holidays(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<LocalDate> holidays = holidayStrings.stream()
+                        .map(LocalDate::parse)
+                        .collect(Collectors.toList());
+                hospital.setHolidays(holidays);
+            } catch (Exception e) {
+                System.err.println("휴무일 파싱 실패: " + e.getMessage());
+                hospital.setHolidays(Collections.emptyList());
+            }
+        }
+
+        if (request.operatingStartTime() != null && !request.operatingStartTime().isEmpty()) {
+            try {
+                hospital.setOperatingStartTime(LocalTime.parse(request.operatingStartTime()));
+            } catch (Exception e) {
+                System.err.println("운영 시작 시간 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.operatingEndTime() != null && !request.operatingEndTime().isEmpty()) {
+            try {
+                hospital.setOperatingEndTime(LocalTime.parse(request.operatingEndTime()));
+            } catch (Exception e) {
+                System.err.println("운영 종료 시간 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.breakTimes() != null && !request.breakTimes().isEmpty()) {
+            try {
+                List<String> breakTimeStrings = objectMapper.readValue(
+                        request.breakTimes(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<LocalTime> breakTimes = breakTimeStrings.stream()
+                        .map(LocalTime::parse)
+                        .collect(Collectors.toList());
+                hospital.setBreakTimes(breakTimes);
+            } catch (Exception e) {
+                System.err.println("휴게 시간 파싱 실패: " + e.getMessage());
+                hospital.setBreakTimes(Collections.emptyList());
+            }
+        }
+
+        if (request.is24Hours() != null) {
+            hospital.setIs24Hours(request.is24Hours());
+        }
+
+        if (request.description() != null && !request.description().isEmpty()) {
+            hospital.setDescription(request.description());
         }
 
         hospitalRepository.save(hospital);
@@ -117,6 +234,144 @@ public class HospitalAuthService {
         }
 
         if (request.description() != null) {
+            hospital.setDescription(request.description());
+        }
+
+        hospitalRepository.save(hospital);
+
+        String token = jwtUtil.generateToken(hospital.getUsername());
+        return HospitalAuthResponse.success(token, hospital);
+    }
+
+    @Transactional
+    public HospitalAuthResponse updateDetailsWithImage(String username, HospitalUpdateRequest request, MultipartFile imageFile) throws IOException {
+        Hospital hospital = hospitalRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("병원을 찾을 수 없습니다."));
+
+        if (request.representativeName() != null && !request.representativeName().isEmpty()) {
+            hospital.setRepresentativeName(request.representativeName());
+        }
+
+        if (request.name() != null && !request.name().isEmpty()) {
+            hospital.setName(request.name());
+        }
+
+        if (request.hospitalNumber() != null && !request.hospitalNumber().isEmpty()) {
+            hospital.setHospitalNumber(request.hospitalNumber());
+        }
+
+        if (request.address() != null && !request.address().isEmpty()) {
+            hospital.setAddress(request.address());
+        }
+
+        if (imageFile != null && !imageFile.isEmpty()) {
+            if (hospital.getImageUrl() != null) {
+                s3Service.deleteImage(hospital.getImageUrl());
+            }
+            String imageUrl = s3Service.uploadImage(imageFile, "hospitals");
+            hospital.setImageUrl(imageUrl);
+        }
+
+        if (request.hasParking() != null) {
+            hospital.setHasParking(request.hasParking());
+        }
+
+        if (request.departments() != null && !request.departments().isEmpty()) {
+            try {
+                List<String> departmentStrings = objectMapper.readValue(
+                        request.departments(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<Department> departments = departmentStrings.stream()
+                        .map(Department::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setDepartments(departments);
+            } catch (Exception e) {
+                System.err.println("진료 항목 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.animalTypes() != null && !request.animalTypes().isEmpty()) {
+            try {
+                List<String> animalTypeStrings = objectMapper.readValue(
+                        request.animalTypes(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<AnimalType> animalTypes = animalTypeStrings.stream()
+                        .map(AnimalType::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setAnimalTypes(animalTypes);
+            } catch (Exception e) {
+                System.err.println("동물 종류 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.breeds() != null && !request.breeds().isEmpty()) {
+            try {
+                List<String> breedStrings = objectMapper.readValue(
+                        request.breeds(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<Breed> breeds = breedStrings.stream()
+                        .map(Breed::valueOf)
+                        .collect(Collectors.toList());
+                hospital.setBreeds(breeds);
+            } catch (Exception e) {
+                System.err.println("품종 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.holidays() != null && !request.holidays().isEmpty()) {
+            try {
+                List<String> holidayStrings = objectMapper.readValue(
+                        request.holidays(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<LocalDate> holidays = holidayStrings.stream()
+                        .map(LocalDate::parse)
+                        .collect(Collectors.toList());
+                hospital.setHolidays(holidays);
+            } catch (Exception e) {
+                System.err.println("휴무일 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.operatingStartTime() != null && !request.operatingStartTime().isEmpty()) {
+            try {
+                hospital.setOperatingStartTime(LocalTime.parse(request.operatingStartTime()));
+            } catch (Exception e) {
+                System.err.println("운영 시작 시간 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.operatingEndTime() != null && !request.operatingEndTime().isEmpty()) {
+            try {
+                hospital.setOperatingEndTime(LocalTime.parse(request.operatingEndTime()));
+            } catch (Exception e) {
+                System.err.println("운영 종료 시간 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.breakTimes() != null && !request.breakTimes().isEmpty()) {
+            try {
+                List<String> breakTimeStrings = objectMapper.readValue(
+                        request.breakTimes(),
+                        new TypeReference<List<String>>() {}
+                );
+                List<LocalTime> breakTimes = breakTimeStrings.stream()
+                        .map(LocalTime::parse)
+                        .collect(Collectors.toList());
+                hospital.setBreakTimes(breakTimes);
+            } catch (Exception e) {
+                System.err.println("휴게 시간 파싱 실패: " + e.getMessage());
+            }
+        }
+
+        if (request.is24Hours() != null) {
+            hospital.setIs24Hours(request.is24Hours());
+        }
+
+        if (request.description() != null && !request.description().isEmpty()) {
             hospital.setDescription(request.description());
         }
 

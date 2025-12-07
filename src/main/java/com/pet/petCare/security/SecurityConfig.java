@@ -35,9 +35,7 @@ public class SecurityConfig {
                         .requestMatchers("/api/v1/auth/**").permitAll()
                         .requestMatchers("/api/v1/hospital/auth/signup").permitAll()
                         .requestMatchers("/api/v1/hospital/auth/login").permitAll()
-                        .requestMatchers("/api/v1/hospital/auth/check-*").permitAll()
-
-                        .requestMatchers("/api/v1/hospital/auth/**").authenticated()
+                        .requestMatchers("/api/v1/hospital/auth/check-**").permitAll()
 
                         .requestMatchers("/api/v1/reservations/**").authenticated()
 

@@ -1,13 +1,5 @@
 package com.pet.petCare.dto;
 
-import com.pet.petCare.domain.enums.AnimalType;
-import com.pet.petCare.domain.enums.Breed;
-import com.pet.petCare.domain.enums.Department;
-
-import java.time.LocalDate;
-import java.time.LocalTime;
-import java.util.List;
-
 public record HospitalSignupRequest(
         String representativeName,
         String username,
@@ -16,18 +8,15 @@ public record HospitalSignupRequest(
         String hospitalNumber,
         String businessRegistrationNumber,
         String address,
-
         Boolean hasParking,
-        List<Department> departments,
-        List<AnimalType> animalTypes,
-        List<Breed> breeds,
-        List<LocalDate> holidays,
-
-        LocalTime operatingStartTime,
-        LocalTime operatingEndTime,
+        String departments,
+        String animalTypes,
+        String breeds,
+        String holidays,
+        String operatingStartTime,
+        String operatingEndTime,
         Boolean is24Hours,
-        List<LocalTime> breakTimes,
-
+        String breakTimes,
         String imageUrl,
         String description
 ) {}
