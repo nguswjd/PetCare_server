@@ -31,41 +31,21 @@ public class HospitalController {
             @RequestParam String keyword,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        System.out.println("===== 검색 시작 =====");
-        System.out.println("키워드: " + keyword);
-        System.out.println("헤더: " + authHeader);
-
         if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            System.out.println("✅ Bearer 토큰 발견");
             try {
                 String token = authHeader.substring(7);
-                System.out.println("토큰 추출: " + token.substring(0, 20) + "...");
-
                 String username = jwtUtil.extractUsername(token);
-                System.out.println("Username 추출: " + username);
 
                 if (username != null && jwtUtil.validateToken(token, username)) {
-                    System.out.println("✅ 토큰 유효함");
-
                     Long userId = hospitalService.getUserIdByUsername(username);
-                    System.out.println("UserId: " + userId);
 
                     if (userId != null) {
-                        System.out.println("✅ 검색 기록 저장 시도");
                         searchHistoryService.saveSearchKeyword(userId, keyword);
-                        System.out.println("✅ 검색 기록 저장 완료");
-                    } else {
-                        System.out.println("❌ userId가 null입니다");
                     }
-                } else {
-                    System.out.println("❌ 토큰 유효하지 않음");
                 }
             } catch (Exception e) {
                 System.err.println("검색 기록 저장 실패: " + e.getMessage());
-                e.printStackTrace();
             }
-        } else {
-            System.out.println("❌ Authorization 헤더 없음 또는 Bearer 아님");
         }
 
         List<Hospital> hospitals = hospitalService.searchHospitals(keyword);

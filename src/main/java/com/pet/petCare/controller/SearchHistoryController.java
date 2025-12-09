@@ -37,4 +37,19 @@ public class SearchHistoryController {
         searchHistoryService.deleteHistory(historyId);
         return ResponseEntity.ok("검색 기록이 삭제되었습니다.");
     }
+
+    @DeleteMapping("/user/{userId}/keyword/{keyword}")
+    public ResponseEntity<Void> deleteSearchHistoryByKeyword(
+            @PathVariable Long userId,
+            @PathVariable String keyword
+    ) {
+        searchHistoryService.deleteByUserIdAndKeyword(userId, keyword);
+        return ResponseEntity.noContent().build();
+    }
+
+    @DeleteMapping("/user/{userId}/all")
+    public ResponseEntity<Void> deleteAllSearchHistory(@PathVariable Long userId) {
+        searchHistoryService.deleteAllByUserId(userId);
+        return ResponseEntity.noContent().build();
+    }
 }
