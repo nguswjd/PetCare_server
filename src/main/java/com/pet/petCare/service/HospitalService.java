@@ -3,6 +3,7 @@ package com.pet.petCare.service;
 import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.dto.HospitalDetailResponse;
 import com.pet.petCare.repository.HospitalRepository;
+import com.pet.petCare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -17,6 +18,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HospitalService {
     private final HospitalRepository hospitalRepository;
+    private final UserRepository userRepository;
     private final S3Service s3Service;
     private final PasswordEncoder passwordEncoder;
 
@@ -25,9 +27,23 @@ public class HospitalService {
         return HospitalDetailResponse.from(hospital);
     }
 
-    // 검색 메서드 추가
+    @Transactional(readOnly = true)
     public List<Hospital> searchHospitals(String keyword) {
-        return hospitalRepository.findByNameContainingOrAddressContaining(keyword, keyword);
+        List<Hospital> hospitals = hospitalRepository.findByNameContainingOrAddressContaining(keyword, keyword);
+
+        hospitals.forEach(hospital -> {
+            hospital.getDepartments().size();
+            hospital.getAnimalTypes().size();
+            hospital.getBreeds().size();
+        });
+
+        return hospitals;
+    }
+
+    public Long getUserIdByUsername(String username) {
+        return userRepository.findByUsername(username)
+                .map(user -> user.getId())
+                .orElse(null);
     }
 
     public Hospital registerHospital(Hospital hospital, MultipartFile imageFile) throws IOException {

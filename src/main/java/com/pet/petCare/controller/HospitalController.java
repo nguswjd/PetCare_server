@@ -3,6 +3,8 @@ package com.pet.petCare.controller;
 import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.dto.HospitalDetailResponse;
 import com.pet.petCare.service.HospitalService;
+import com.pet.petCare.service.SearchHistoryService;
+import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -16,15 +18,56 @@ import java.util.List;
 @RequiredArgsConstructor
 public class HospitalController {
     private final HospitalService hospitalService;
+    private final SearchHistoryService searchHistoryService;
+    private final JwtUtil jwtUtil;
 
     @GetMapping("/api/v1/hospital/{id}")
     public HospitalDetailResponse getHospitalDetail(@PathVariable Long id) {
         return hospitalService.getHospital(id);
     }
 
-    // 병원 검색 API 추가
     @GetMapping("/api/v1/hospitals/search")
-    public ResponseEntity<List<Hospital>> searchHospitals(@RequestParam String keyword) {
+    public ResponseEntity<List<Hospital>> searchHospitals(
+            @RequestParam String keyword,
+            @RequestHeader(value = "Authorization", required = false) String authHeader) {
+
+        System.out.println("===== 검색 시작 =====");
+        System.out.println("키워드: " + keyword);
+        System.out.println("헤더: " + authHeader);
+
+        if (authHeader != null && authHeader.startsWith("Bearer ")) {
+            System.out.println("✅ Bearer 토큰 발견");
+            try {
+                String token = authHeader.substring(7);
+                System.out.println("토큰 추출: " + token.substring(0, 20) + "...");
+
+                String username = jwtUtil.extractUsername(token);
+                System.out.println("Username 추출: " + username);
+
+                if (username != null && jwtUtil.validateToken(token, username)) {
+                    System.out.println("✅ 토큰 유효함");
+
+                    Long userId = hospitalService.getUserIdByUsername(username);
+                    System.out.println("UserId: " + userId);
+
+                    if (userId != null) {
+                        System.out.println("✅ 검색 기록 저장 시도");
+                        searchHistoryService.saveSearchKeyword(userId, keyword);
+                        System.out.println("✅ 검색 기록 저장 완료");
+                    } else {
+                        System.out.println("❌ userId가 null입니다");
+                    }
+                } else {
+                    System.out.println("❌ 토큰 유효하지 않음");
+                }
+            } catch (Exception e) {
+                System.err.println("검색 기록 저장 실패: " + e.getMessage());
+                e.printStackTrace();
+            }
+        } else {
+            System.out.println("❌ Authorization 헤더 없음 또는 Bearer 아님");
+        }
+
         List<Hospital> hospitals = hospitalService.searchHospitals(keyword);
         return ResponseEntity.ok(hospitals);
     }
