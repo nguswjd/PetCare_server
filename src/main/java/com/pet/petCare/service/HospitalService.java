@@ -1,6 +1,8 @@
 package com.pet.petCare.service;
 
 import com.pet.petCare.domain.Hospital;
+import com.pet.petCare.domain.enums.Breed;
+import com.pet.petCare.domain.enums.Department;
 import com.pet.petCare.dto.HospitalDetailResponse;
 import com.pet.petCare.repository.HospitalRepository;
 import com.pet.petCare.repository.UserRepository;
@@ -11,7 +13,10 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @Transactional
@@ -23,13 +28,31 @@ public class HospitalService {
     private final PasswordEncoder passwordEncoder;
 
     public HospitalDetailResponse getHospital(Long hospitalId) {
-        Hospital hospital = hospitalRepository.findById(hospitalId).orElseThrow();
+        Hospital hospital = hospitalRepository.findById(hospitalId)
+                .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
         return HospitalDetailResponse.from(hospital);
     }
 
     @Transactional(readOnly = true)
     public List<Hospital> searchHospitals(String keyword) {
-        List<Hospital> hospitals = hospitalRepository.findByNameContainingOrAddressContaining(keyword, keyword);
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        String searchKeyword = keyword.trim();
+
+        List<Breed> matchingBreeds = Arrays.stream(Breed.values())
+                .filter(breed -> breed.getDescription().contains(searchKeyword))
+                .collect(Collectors.toList());
+
+        List<Department> matchingDepartments = Arrays.stream(Department.values())
+                .filter(dept -> dept.getDepartment().contains(searchKeyword))
+                .collect(Collectors.toList());
+
+        if (matchingBreeds.isEmpty()) matchingBreeds.add(null);
+        if (matchingDepartments.isEmpty()) matchingDepartments.add(null);
+
+        List<Hospital> hospitals = hospitalRepository.searchHospitals(searchKeyword, matchingBreeds, matchingDepartments);
 
         hospitals.forEach(hospital -> {
             hospital.getDepartments().size();

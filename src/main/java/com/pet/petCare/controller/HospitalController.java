@@ -6,6 +6,7 @@ import com.pet.petCare.service.HospitalService;
 import com.pet.petCare.service.SearchHistoryService;
 import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -14,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 import java.io.IOException;
 import java.util.List;
 
+@Slf4j
 @RestController
 @RequiredArgsConstructor
 public class HospitalController {
@@ -31,22 +33,7 @@ public class HospitalController {
             @RequestParam String keyword,
             @RequestHeader(value = "Authorization", required = false) String authHeader) {
 
-        if (authHeader != null && authHeader.startsWith("Bearer ")) {
-            try {
-                String token = authHeader.substring(7);
-                String username = jwtUtil.extractUsername(token);
-
-                if (username != null && jwtUtil.validateToken(token, username)) {
-                    Long userId = hospitalService.getUserIdByUsername(username);
-
-                    if (userId != null) {
-                        searchHistoryService.saveSearchKeyword(userId, keyword);
-                    }
-                }
-            } catch (Exception e) {
-                System.err.println("검색 기록 저장 실패: " + e.getMessage());
-            }
-        }
+        saveSearchHistoryIfLoggedIn(authHeader, keyword);
 
         List<Hospital> hospitals = hospitalService.searchHospitals(keyword);
         return ResponseEntity.ok(hospitals);
@@ -90,6 +77,25 @@ public class HospitalController {
             return ResponseEntity.ok("병원이 삭제되었습니다.");
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    private void saveSearchHistoryIfLoggedIn(String authHeader, String keyword) {
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
+            return;
+        }
+        try {
+            String token = authHeader.substring(7);
+            String username = jwtUtil.extractUsername(token);
+
+            if (username != null && jwtUtil.validateToken(token, username)) {
+                Long userId = hospitalService.getUserIdByUsername(username);
+                if (userId != null) {
+                    searchHistoryService.saveSearchKeyword(userId, keyword);
+                }
+            }
+        } catch (Exception e) {
+            log.error("검색 기록 저장 실패", e);
         }
     }
 }

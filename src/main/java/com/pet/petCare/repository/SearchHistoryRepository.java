@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Optional;
 
 public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Long> {
 
@@ -17,6 +18,8 @@ public interface SearchHistoryRepository extends JpaRepository<SearchHistory, Lo
     List<String> findPopularKeywords(Pageable pageable);
 
     Page<SearchHistory> findByUserId(Long userId, Pageable pageable);
+
+    Optional<SearchHistory> findByUserIdAndKeyword(Long userId, String keyword);
 
     @Transactional
     void deleteByUserIdAndKeyword(Long userId, String keyword);

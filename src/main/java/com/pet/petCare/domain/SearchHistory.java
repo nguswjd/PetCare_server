@@ -2,6 +2,7 @@ package com.pet.petCare.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -18,41 +19,13 @@ public class SearchHistory {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @Column(name = "user_id")
+    @Column(name = "user_id", nullable = false)
     private Long userId;
 
+    @Column(nullable = false)
     private String keyword;
 
+    @CreationTimestamp
     @Column(name = "searched_at", nullable = false)
     private LocalDateTime searchedAt;
-
-    @Column(name = "created_at")
-    private LocalDateTime createdAt;
-
-    private String address;
-
-    @Column(name = "animal_type")
-    private String animalType;
-
-    private String breed;
-
-    private String department;
-
-    @Column(name = "has_parking")
-    private Boolean hasParking;
-
-    @Column(name = "ip_address")
-    private String ipAddress;
-
-    @Column(name = "is_24_hours")
-    private Boolean is24Hours;
-
-    @Column(name = "result_count")
-    private Integer resultCount;
-
-    @PrePersist
-    protected void onCreate() {
-        this.searchedAt = LocalDateTime.now();
-        this.createdAt = LocalDateTime.now();
-    }
 }

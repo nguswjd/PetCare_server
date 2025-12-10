@@ -1,7 +1,6 @@
 package com.pet.petCare.service;
 
 import com.pet.petCare.domain.SearchHistory;
-import com.pet.petCare.domain.User;
 import com.pet.petCare.dto.SearchHistoryResponse;
 import com.pet.petCare.repository.SearchHistoryRepository;
 import com.pet.petCare.repository.UserRepository;
@@ -25,16 +24,24 @@ public class SearchHistoryService {
 
     @Transactional
     public void saveSearchKeyword(Long userId, String keyword) {
-        User user = userRepository.findById(userId)
+        if (keyword == null || keyword.trim().isEmpty()) {
+            return;
+        }
+
+        userRepository.findById(userId)
                 .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
 
-        SearchHistory searchHistory = SearchHistory.builder()
-                .userId(userId)
-                .keyword(keyword)
-                .createdAt(LocalDateTime.now())
-                .build();
-
-        searchHistoryRepository.save(searchHistory);
+        searchHistoryRepository.findByUserIdAndKeyword(userId, keyword)
+                .ifPresentOrElse(
+                        existing -> existing.setSearchedAt(LocalDateTime.now()),
+                        () -> {
+                            SearchHistory searchHistory = SearchHistory.builder()
+                                    .userId(userId)
+                                    .keyword(keyword)
+                                    .build();
+                            searchHistoryRepository.save(searchHistory);
+                        }
+                );
     }
 
     public List<String> getPopularKeywords(int limit) {
@@ -43,14 +50,10 @@ public class SearchHistoryService {
     }
 
     public Page<SearchHistoryResponse> getUserSearchHistory(Long userId, int page, int size) {
-        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "createdAt"));
+        Pageable pageable = PageRequest.of(page, size, Sort.by(Sort.Direction.DESC, "searchedAt"));
         Page<SearchHistory> histories = searchHistoryRepository.findByUserId(userId, pageable);
 
-        return histories.map(history -> SearchHistoryResponse.builder()
-                .id(history.getId())
-                .keyword(history.getKeyword())
-                .createdAt(history.getCreatedAt())
-                .build());
+        return histories.map(SearchHistoryResponse::new);
     }
 
     @Transactional

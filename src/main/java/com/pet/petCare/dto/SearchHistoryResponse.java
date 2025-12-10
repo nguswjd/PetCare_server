@@ -14,11 +14,11 @@ public class SearchHistoryResponse {
 
     private final Long id;
     private final String keyword;
-    private final LocalDateTime createdAt;
+    private final LocalDateTime searchedAt;
 
     public SearchHistoryResponse(SearchHistory history) {
         this.id = history.getId();
         this.keyword = history.getKeyword();
-        this.createdAt = history.getCreatedAt();
+        this.searchedAt = history.getSearchedAt();
     }
 }
