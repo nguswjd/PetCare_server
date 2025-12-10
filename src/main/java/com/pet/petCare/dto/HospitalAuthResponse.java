@@ -31,7 +31,6 @@ public record HospitalAuthResponse(
         Boolean is24Hours,
         List<LocalTime> breakTimes,
         String imageUrl,
-        String description,
         String message
 ) {
     public static HospitalAuthResponse success(String token, Hospital hospital) {
@@ -54,7 +53,6 @@ public record HospitalAuthResponse(
                 .is24Hours(hospital.isIs24Hours())
                 .breakTimes(hospital.getBreakTimes())
                 .imageUrl(hospital.getImageUrl())
-                .description(hospital.getDescription())
                 .build();
     }
 

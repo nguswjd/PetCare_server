@@ -80,23 +80,6 @@ public class AuthController {
         }
     }
 
-
-    @GetMapping("/animal-types")
-    public AnimalTypeResponse getAnimalTypes() {
-        return AnimalTypeResponse.all();
-    }
-
-    @GetMapping("/breeds/{animalType}")
-    public ResponseEntity<?> getBreedsByAnimalType(@PathVariable String animalType) {
-        try {
-            AnimalType type = AnimalType.valueOf(animalType.toUpperCase());
-            return ResponseEntity.ok(BreedFilterResponse.from(type));
-        } catch (IllegalArgumentException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(AuthResponse.error("유효하지 않은 동물 종류입니다"));
-        }
-    }
-
     @GetMapping("/check-username")
     public ResponseEntity<AuthResponse> checkUsername(@RequestParam String username) {
         try {

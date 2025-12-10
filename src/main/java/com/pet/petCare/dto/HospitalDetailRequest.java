@@ -20,6 +20,5 @@ public record HospitalDetailRequest(
         Boolean is24Hours,
         List<LocalTime> breakTimes,
 
-        String imageUrl,
-        String description
+        String imageUrl
 ) {}

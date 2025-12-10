@@ -86,7 +86,6 @@ public class HospitalService {
 
         hospital.setName(updatedInfo.getName());
         hospital.setAddress(updatedInfo.getAddress());
-        hospital.setDescription(updatedInfo.getDescription());
 
         if (imageFile != null && !imageFile.isEmpty()) {
             if (hospital.getImageUrl() != null) {

@@ -16,4 +16,13 @@ public enum Department {
     OTHER("기타");
 
     private final String department;
+
+    public static Department fromDescription(String description) {
+        for (Department dept : Department.values()) {
+            if (dept.getDepartment().equals(description)) {
+                return dept;
+            }
+        }
+        throw new IllegalArgumentException("Unknown department: " + description);
+    }
 }

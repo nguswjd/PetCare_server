@@ -26,14 +26,12 @@ public record HospitalDetailResponse(
         LocalTime operatingEndTime,
         boolean is24Hours,
         List<LocalTime> breakTimes,
-        String imageUrl,
-        String description
+        String imageUrl
 ) {
     public static HospitalDetailResponse from(Hospital hospital) {
         return HospitalDetailResponse.builder()
                 .name(hospital.getName())
                 .imageUrl(hospital.getImageUrl())
-                .description(hospital.getDescription())
                 .approvalStatus(hospital.getStatus() != null
                         ? hospital.getStatus().getDescription()
                         : null)

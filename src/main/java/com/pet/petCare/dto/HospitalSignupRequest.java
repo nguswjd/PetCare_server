@@ -17,6 +17,5 @@ public record HospitalSignupRequest(
         String operatingEndTime,
         Boolean is24Hours,
         String breakTimes,
-        String imageUrl,
-        String description
+        String imageUrl
 ) {}

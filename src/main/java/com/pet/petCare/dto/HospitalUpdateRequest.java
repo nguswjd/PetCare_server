@@ -13,8 +13,7 @@ public record HospitalUpdateRequest(
         String operatingStartTime,
         String operatingEndTime,
         Boolean is24Hours,
-        String breakTimes,
-        String description
+        String breakTimes
 ) {
     public String getRepresentativeName() {
         return representativeName;
@@ -34,10 +33,6 @@ public record HospitalUpdateRequest(
 
     public Boolean getHasParking() {
         return hasParking;
-    }
-
-    public String getDepartments() {
-        return departments;
     }
 
     public String getAnimalTypes() {
@@ -66,9 +61,5 @@ public record HospitalUpdateRequest(
 
     public String getBreakTimes() {
         return breakTimes;
-    }
-
-    public String getDescription() {
-        return description;
     }
 }

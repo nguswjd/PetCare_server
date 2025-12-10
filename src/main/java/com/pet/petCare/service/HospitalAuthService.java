@@ -79,6 +79,7 @@ public class HospitalAuthService {
                 hospital.setDepartments(departments);
             } catch (Exception e) {
                 System.err.println("진료 항목 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
                 hospital.setDepartments(Collections.emptyList());
             }
         }
@@ -95,6 +96,7 @@ public class HospitalAuthService {
                 hospital.setAnimalTypes(animalTypes);
             } catch (Exception e) {
                 System.err.println("동물 종류 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
                 hospital.setAnimalTypes(Collections.emptyList());
             }
         }
@@ -111,6 +113,7 @@ public class HospitalAuthService {
                 hospital.setBreeds(breeds);
             } catch (Exception e) {
                 System.err.println("품종 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
                 hospital.setBreeds(Collections.emptyList());
             }
         }
@@ -127,6 +130,7 @@ public class HospitalAuthService {
                 hospital.setHolidays(holidays);
             } catch (Exception e) {
                 System.err.println("휴무일 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
                 hospital.setHolidays(Collections.emptyList());
             }
         }
@@ -136,6 +140,7 @@ public class HospitalAuthService {
                 hospital.setOperatingStartTime(LocalTime.parse(request.operatingStartTime()));
             } catch (Exception e) {
                 System.err.println("운영 시작 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -144,6 +149,7 @@ public class HospitalAuthService {
                 hospital.setOperatingEndTime(LocalTime.parse(request.operatingEndTime()));
             } catch (Exception e) {
                 System.err.println("운영 종료 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -159,16 +165,13 @@ public class HospitalAuthService {
                 hospital.setBreakTimes(breakTimes);
             } catch (Exception e) {
                 System.err.println("휴게 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
                 hospital.setBreakTimes(Collections.emptyList());
             }
         }
 
         if (request.is24Hours() != null) {
             hospital.setIs24Hours(request.is24Hours());
-        }
-
-        if (request.description() != null && !request.description().isEmpty()) {
-            hospital.setDescription(request.description());
         }
 
         hospitalRepository.save(hospital);
@@ -233,10 +236,6 @@ public class HospitalAuthService {
             hospital.setBreakTimes(request.breakTimes());
         }
 
-        if (request.description() != null) {
-            hospital.setDescription(request.description());
-        }
-
         hospitalRepository.save(hospital);
 
         String token = jwtUtil.generateToken(hospital.getUsername());
@@ -288,6 +287,7 @@ public class HospitalAuthService {
                 hospital.setDepartments(departments);
             } catch (Exception e) {
                 System.err.println("진료 항목 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -303,6 +303,7 @@ public class HospitalAuthService {
                 hospital.setAnimalTypes(animalTypes);
             } catch (Exception e) {
                 System.err.println("동물 종류 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -318,6 +319,7 @@ public class HospitalAuthService {
                 hospital.setBreeds(breeds);
             } catch (Exception e) {
                 System.err.println("품종 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -333,6 +335,7 @@ public class HospitalAuthService {
                 hospital.setHolidays(holidays);
             } catch (Exception e) {
                 System.err.println("휴무일 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -341,6 +344,7 @@ public class HospitalAuthService {
                 hospital.setOperatingStartTime(LocalTime.parse(request.operatingStartTime()));
             } catch (Exception e) {
                 System.err.println("운영 시작 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -349,6 +353,7 @@ public class HospitalAuthService {
                 hospital.setOperatingEndTime(LocalTime.parse(request.operatingEndTime()));
             } catch (Exception e) {
                 System.err.println("운영 종료 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
@@ -364,15 +369,12 @@ public class HospitalAuthService {
                 hospital.setBreakTimes(breakTimes);
             } catch (Exception e) {
                 System.err.println("휴게 시간 파싱 실패: " + e.getMessage());
+                e.printStackTrace();
             }
         }
 
         if (request.is24Hours() != null) {
             hospital.setIs24Hours(request.is24Hours());
-        }
-
-        if (request.description() != null && !request.description().isEmpty()) {
-            hospital.setDescription(request.description());
         }
 
         hospitalRepository.save(hospital);
@@ -400,12 +402,31 @@ public class HospitalAuthService {
         if (request.name() == null || request.name().isBlank()) {
             throw new RuntimeException("병원명은 필수항목입니다.");
         }
+
         if (request.hospitalNumber() == null || request.hospitalNumber().isBlank()) {
             throw new RuntimeException("사업장번호는 필수항목입니다.");
         }
+
+        String hospitalNumber = request.hospitalNumber().replaceAll("-", "");
+        if (hospitalNumber.length() < 9 || hospitalNumber.length() > 11) {
+            throw new RuntimeException("사업장번호는 9~11자리여야 합니다.");
+        }
+        if (!hospitalNumber.matches("^[0-9]+$")) {
+            throw new RuntimeException("사업장번호는 숫자만 입력 가능합니다.");
+        }
+
         if (request.businessRegistrationNumber() == null || request.businessRegistrationNumber().isBlank()) {
             throw new RuntimeException("사업자등록번호는 필수항목입니다.");
         }
+
+        String businessNumber = request.businessRegistrationNumber().replaceAll("-", "");
+        if (businessNumber.length() != 10) {
+            throw new RuntimeException("사업자등록번호는 10자리여야 합니다.");
+        }
+        if (!businessNumber.matches("^[0-9]+$")) {
+            throw new RuntimeException("사업자등록번호는 숫자만 입력 가능합니다.");
+        }
+
         if (request.address() == null || request.address().isBlank()) {
             throw new RuntimeException("주소는 필수항목입니다.");
         }

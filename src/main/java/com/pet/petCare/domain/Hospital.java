@@ -7,6 +7,7 @@ import java.time.LocalDateTime;
 import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
+import java.time.ZoneId;
 import com.fasterxml.jackson.annotation.JsonProperty;
 
 @Entity
@@ -85,9 +86,6 @@ public class Hospital {
     @Column(length = 500)
     private String imageUrl;
 
-    @Column(length = 1000)
-    private String description;
-
     @Column(name = "created_at")
     private LocalDateTime createdAt;
 
@@ -115,15 +113,16 @@ public class Hospital {
     @JsonProperty("operatingStatus")
     @Transient
     public HospitalOperatingStatus getOperatingStatus() {
-        LocalTime now = LocalTime.now();
-        LocalDate today = LocalDate.now();
+        ZoneId koreaZone = ZoneId.of("Asia/Seoul");
+        LocalTime now = LocalTime.now(koreaZone);
+        LocalDate today = LocalDate.now(koreaZone);
 
         if (holidays != null && holidays.contains(today)) {
             return HospitalOperatingStatus.CLOSED;
         }
 
         if (is24Hours) {
-            if (breakTimes != null) {
+            if (breakTimes != null && !breakTimes.isEmpty()) {
                 for (LocalTime breakStart : breakTimes) {
                     LocalTime breakEnd = breakStart.plusHours(1);
                     if (!now.isBefore(breakStart) && now.isBefore(breakEnd)) {
@@ -138,13 +137,13 @@ public class Hospital {
             return HospitalOperatingStatus.CLOSED;
         }
 
-        boolean isOperatingTime = !now.isBefore(operatingStartTime) && !now.isAfter(operatingEndTime);
+        boolean isOperatingTime = !now.isBefore(operatingStartTime) && now.isBefore(operatingEndTime);
 
         if (!isOperatingTime) {
             return HospitalOperatingStatus.CLOSED;
         }
 
-        if (breakTimes != null) {
+        if (breakTimes != null && !breakTimes.isEmpty()) {
             for (LocalTime breakStart : breakTimes) {
                 LocalTime breakEnd = breakStart.plusHours(1);
                 if (!now.isBefore(breakStart) && now.isBefore(breakEnd)) {
@@ -306,14 +305,6 @@ public class Hospital {
 
     public void setImageUrl(String imageUrl) {
         this.imageUrl = imageUrl;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
     }
 
     public LocalDateTime getCreatedAt() {
