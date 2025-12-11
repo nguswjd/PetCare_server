@@ -10,8 +10,7 @@ import java.util.Optional;
 
 public interface ViewHistoryRepository extends JpaRepository<ViewHistory, Long> {
 
-    @Query("SELECT vh FROM ViewHistory vh WHERE vh.userId = :userId ORDER BY vh.viewedAt DESC")
-    List<ViewHistory> findByUserIdOrderByViewedAtDesc(Long userId, Pageable pageable);
-
     Optional<ViewHistory> findByUserIdAndHospitalId(Long userId, Long hospitalId);
+
+    List<ViewHistory> findByUserIdOrderByViewedAtDesc(Long userId, Pageable pageable);
 }

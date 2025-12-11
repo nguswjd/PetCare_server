@@ -13,6 +13,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1/reservations")
@@ -32,6 +33,30 @@ public class ReservationController {
         );
 
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @GetMapping
+    public ResponseEntity<List<ReservationResponse>> getUserReservations(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        List<ReservationResponse> response = reservationService.getUserReservations(
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/hospital/{hospitalId}")
+    public ResponseEntity<ReservationResponse> getUserReservationForHospital(
+            @PathVariable Long hospitalId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        ReservationResponse response = reservationService.getUserReservationForHospital(
+                userDetails.getUsername(),
+                hospitalId
+        );
+
+        return ResponseEntity.ok(response);
     }
 
     @GetMapping("/{hospitalId}/available-times")

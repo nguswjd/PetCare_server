@@ -29,20 +29,20 @@ public class ViewHistoryService {
     public void saveViewHistory(Long userId, Long hospitalId) {
         if (!hospitalRepository.existsById(hospitalId)) {
             log.warn("존재하지 않는 병원 ID 저장 시도: {}", hospitalId);
-            return;
+            throw new IllegalArgumentException("존재하지 않는 병원입니다: " + hospitalId);
         }
 
-        viewHistoryRepository.findByUserIdAndHospitalId(userId, hospitalId)
-                .ifPresentOrElse(
-                        existing -> existing.setViewedAt(LocalDateTime.now()),
-                        () -> {
-                            ViewHistory newHistory = ViewHistory.builder()
-                                    .userId(userId)
-                                    .hospitalId(hospitalId)
-                                    .build();
-                            viewHistoryRepository.save(newHistory);
-                        }
-                );
+        ViewHistory history = viewHistoryRepository
+                .findByUserIdAndHospitalId(userId, hospitalId)
+                .orElseGet(() -> ViewHistory.builder()
+                        .userId(userId)
+                        .hospitalId(hospitalId)
+                        .build());
+
+        history.setViewedAt(LocalDateTime.now());
+        viewHistoryRepository.save(history);
+
+        log.debug("병원 조회 기록 저장 완료 - userId: {}, hospitalId: {}", userId, hospitalId);
     }
 
     @Transactional(readOnly = true)
@@ -57,7 +57,12 @@ public class ViewHistoryService {
             try {
                 Hospital hospital = vh.getHospital();
 
-                if (hospital == null || uniqueHospitalIds.contains(hospital.getId())) {
+                if (hospital == null) {
+                    log.warn("ViewHistory ID {}에 연결된 병원이 없습니다", vh.getId());
+                    continue;
+                }
+
+                if (uniqueHospitalIds.contains(hospital.getId())) {
                     continue;
                 }
 
@@ -68,7 +73,9 @@ public class ViewHistoryService {
                         .name(hospital.getName())
                         .address(hospital.getAddress())
                         .imageUrl(hospital.getImageUrl())
-                        .operatingStatus(hospital.getOperatingStatus() != null ? hospital.getOperatingStatus().name() : "UNKNOWN")
+                        .operatingStatus(hospital.getOperatingStatus() != null
+                                ? hospital.getOperatingStatus().name()
+                                : "UNKNOWN")
                         .visitedAt(vh.getViewedAt().toString())
                         .build());
 
@@ -77,10 +84,11 @@ public class ViewHistoryService {
                 }
 
             } catch (Exception e) {
-                log.error("데이터 변환 중 에러 발생", e);
+                log.error("ViewHistory ID {} 데이터 변환 중 에러 발생", vh.getId(), e);
             }
         }
 
+        log.debug("사용자 {} 조회 기록 조회 완료: {} 건", userId, result.size());
         return result;
     }
 }

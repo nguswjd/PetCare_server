@@ -75,6 +75,30 @@ public class ReservationService {
         return ReservationResponse.from(savedReservation);
     }
 
+    public List<ReservationResponse> getUserReservations(String username) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        List<Reservation> reservations = reservationRepository.findByUserId(user.getId());
+
+        return reservations.stream()
+                .map(ReservationResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    public ReservationResponse getUserReservationForHospital(String username, Long hospitalId) {
+        User user = userRepository.findByUsername(username)
+                .orElseThrow(() -> new IllegalArgumentException("사용자를 찾을 수 없습니다."));
+
+        return reservationRepository.findByUserIdAndHospitalIdAndStatusIn(
+                        user.getId(),
+                        hospitalId,
+                        Arrays.asList(ReservationStatus.PENDING, ReservationStatus.CONFIRMED)
+                )
+                .map(ReservationResponse::from)
+                .orElse(null);
+    }
+
     public AvailableTimesResponse getAvailableTimes(Long hospitalId, LocalDate date, String departmentStr) {
         hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));

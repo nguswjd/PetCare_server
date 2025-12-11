@@ -35,4 +35,12 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     Optional<Reservation> findByIdAndUserId(Long id, Long userId);
+
+    List<Reservation> findByUserId(Long userId);
+
+    Optional<Reservation> findByUserIdAndHospitalIdAndStatusIn(
+            Long userId,
+            Long hospitalId,
+            List<ReservationStatus> statuses
+    );
 }
