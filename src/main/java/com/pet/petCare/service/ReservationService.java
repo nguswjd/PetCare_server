@@ -167,6 +167,21 @@ public class ReservationService {
         return ReservationResponse.from(reservation);
     }
 
+    @Transactional
+    public void cancelReservationByHospital(Long reservationId, String hospitalUsername) {
+        Hospital hospital = hospitalRepository.findByUsername(hospitalUsername)
+                .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+
+        if (!reservation.getHospital().getId().equals(hospital.getId())) {
+            throw new IllegalArgumentException("본인 병원의 예약만 취소할 수 있습니다.");
+        }
+
+        reservation.cancel();
+    }
+
     private void validateReservationRequest(ReservationRequest requestDto) {
         if (requestDto.getHospitalId() == null) {
             throw new IllegalArgumentException("병원 ID는 필수입니다.");

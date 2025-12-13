@@ -111,4 +111,17 @@ public class ReservationController {
 
         return ResponseEntity.ok().build();
     }
+
+    @PatchMapping("/hospital/{reservationId}/cancel")
+    public ResponseEntity<Void> cancelReservationByHospital(
+            @PathVariable Long reservationId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        reservationService.cancelReservationByHospital(
+                reservationId,
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok().build();
+    }
 }
