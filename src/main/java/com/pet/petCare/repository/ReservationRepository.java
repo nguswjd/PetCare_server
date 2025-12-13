@@ -46,4 +46,8 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
     );
 
     Optional<Reservation> findByIdAndUserId(Long id, Long userId);
+
+    void deleteByUserId(Long userId);
+
+    void deleteByHospitalId(Long hospitalId);
 }

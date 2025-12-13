@@ -10,4 +10,8 @@ public interface ReviewRepository extends JpaRepository<Review, Long> {
     boolean existsByReservationId(Long reservationId);
     List<Review> findAllByUserOrderByCreatedAtDesc(User user);
     List<Review> findAllByHospitalOrderByCreatedAtDesc(Hospital hospital);
+
+    void deleteByUserId(Long userId);
+
+    void deleteByHospitalId(Long hospitalId);
 }

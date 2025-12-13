@@ -9,6 +9,8 @@ import com.pet.petCare.dto.SignupRequest;
 import com.pet.petCare.dto.UpdateUserRequest;
 import com.pet.petCare.dto.WithdrawRequest;
 import com.pet.petCare.repository.UserRepository;
+import com.pet.petCare.repository.ReservationRepository;
+import com.pet.petCare.repository.ReviewRepository;
 import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -24,6 +26,8 @@ import java.security.NoSuchAlgorithmException;
 public class AuthService {
 
     private final UserRepository userRepository;
+    private final ReservationRepository reservationRepository;
+    private final ReviewRepository reviewRepository;
     private final JwtUtil jwtUtil;
 
     private String encodePassword(String rawPassword) {
@@ -43,7 +47,6 @@ public class AuthService {
         }
     }
 
-    // 회원가입
     public AuthResponse signup(SignupRequest request) {
         validateSignupRequest(request);
 
@@ -70,7 +73,6 @@ public class AuthService {
         return AuthResponse.success(token, user);
     }
 
-    // 로그인
     @Transactional(readOnly = true)
     public AuthResponse login(LoginRequest request) {
         validateLoginRequest(request);
@@ -87,7 +89,6 @@ public class AuthService {
         return AuthResponse.success(token, user);
     }
 
-    // 내 정보 수정
     @Transactional
     public AuthResponse updateUser(String username, UpdateUserRequest request) {
         User user = userRepository.findByUsername(username)
@@ -119,7 +120,6 @@ public class AuthService {
         return AuthResponse.success(token, user);
     }
 
-    // 회원가입 검증
     private void validateSignupRequest(SignupRequest request) {
         if (request.name() == null || request.name().isBlank()) {
             throw new RuntimeException("필수항목 입니다.");
@@ -165,7 +165,6 @@ public class AuthService {
         }
     }
 
-    // 로그인 검증
     private void validateLoginRequest(LoginRequest request) {
         if (request.username() == null || request.username().isBlank()) {
             throw new RuntimeException("필수항목 입니다.");
@@ -185,12 +184,11 @@ public class AuthService {
         return userRepository.existsByPhoneNumber(phoneNumber);
     }
 
-    // 로그아웃
     public AuthResponse logout() {
         return AuthResponse.success("로그아웃되었습니다.");
     }
 
-    // 회원탈퇴
+    @Transactional
     public AuthResponse withdraw(String username, WithdrawRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -200,11 +198,14 @@ public class AuthService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
+        reviewRepository.deleteByUserId(user.getId());
+        reservationRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
 
         return AuthResponse.success("회원탈퇴가 완료되었습니다.");
     }
 
+    @Transactional
     public AuthResponse withdrawHardDelete(String username, WithdrawRequest request) {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("사용자를 찾을 수 없습니다."));
@@ -214,7 +215,10 @@ public class AuthService {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
 
+        reviewRepository.deleteByUserId(user.getId());
+        reservationRepository.deleteByUserId(user.getId());
         userRepository.delete(user);
+
         return AuthResponse.success("회원탈퇴가 완료되었습니다.");
     }
 

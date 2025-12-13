@@ -6,6 +6,9 @@ import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.domain.enums.*;
 import com.pet.petCare.dto.*;
 import com.pet.petCare.repository.HospitalRepository;
+import com.pet.petCare.repository.ReservationRepository;
+import com.pet.petCare.repository.ReviewRepository;
+import com.pet.petCare.repository.ViewHistoryRepository;
 import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -26,6 +29,9 @@ import java.util.stream.Collectors;
 public class HospitalAuthService {
 
     private final HospitalRepository hospitalRepository;
+    private final ReservationRepository reservationRepository;
+    private final ReviewRepository reviewRepository;
+    private final ViewHistoryRepository viewHistoryRepository;
     private final S3Service s3Service;
     private final JwtUtil jwtUtil;
     private final PasswordEncoder passwordEncoder;
@@ -501,6 +507,7 @@ public class HospitalAuthService {
         return HospitalAuthResponse.success("로그아웃되었습니다.");
     }
 
+    @Transactional
     public HospitalAuthResponse withdraw(String username, HospitalWithdrawRequest request) {
         Hospital hospital = hospitalRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("병원을 찾을 수 없습니다."));
@@ -508,6 +515,10 @@ public class HospitalAuthService {
         if (!passwordEncoder.matches(request.password(), hospital.getPassword())) {
             throw new RuntimeException("비밀번호가 일치하지 않습니다.");
         }
+
+        viewHistoryRepository.deleteByHospitalId(hospital.getId());
+        reviewRepository.deleteByHospitalId(hospital.getId());
+        reservationRepository.deleteByHospitalId(hospital.getId());
 
         if (hospital.getImageUrl() != null) {
             s3Service.deleteImage(hospital.getImageUrl());

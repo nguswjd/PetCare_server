@@ -13,4 +13,8 @@ public interface ViewHistoryRepository extends JpaRepository<ViewHistory, Long> 
     Optional<ViewHistory> findByUserIdAndHospitalId(Long userId, Long hospitalId);
 
     List<ViewHistory> findByUserIdOrderByViewedAtDesc(Long userId, Pageable pageable);
+
+    void deleteByUserId(Long userId);
+
+    void deleteByHospitalId(Long hospitalId);
 }
