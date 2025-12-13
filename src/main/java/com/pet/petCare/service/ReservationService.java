@@ -14,6 +14,7 @@ import com.pet.petCare.repository.HospitalRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import com.pet.petCare.dto.HospitalReservationResponse;
 
 import java.time.LocalDate;
 import java.time.LocalTime;
@@ -125,6 +126,32 @@ public class ReservationService {
                 .availableTimes(availableTimes)
                 .bookedTimes(bookedTimes)
                 .build();
+    }
+
+    public List<HospitalReservationResponse> getHospitalReservations(String hospitalUsername) {
+        Hospital hospital = hospitalRepository.findByUsername(hospitalUsername)
+                .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
+
+        List<Reservation> reservations = reservationRepository.findAllByHospitalId(hospital.getId());
+
+        return reservations.stream()
+                .map(HospitalReservationResponse::from)
+                .collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void completeReservation(Long reservationId, String hospitalUsername) {
+        Hospital hospital = hospitalRepository.findByUsername(hospitalUsername)
+                .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
+
+        Reservation reservation = reservationRepository.findById(reservationId)
+                .orElseThrow(() -> new IllegalArgumentException("예약을 찾을 수 없습니다."));
+
+        if (!reservation.getHospital().getId().equals(hospital.getId())) {
+            throw new IllegalArgumentException("본인 병원의 예약만 처리할 수 있습니다.");
+        }
+
+        reservation.complete();
     }
 
     @Transactional

@@ -11,6 +11,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.*;
+import com.pet.petCare.dto.HospitalReservationResponse;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -85,5 +86,29 @@ public class ReservationController {
         );
 
         return ResponseEntity.ok(response);
+    }
+
+    @GetMapping("/hospital/management")
+    public ResponseEntity<List<HospitalReservationResponse>> getHospitalReservations(
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        List<HospitalReservationResponse> response = reservationService.getHospitalReservations(
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok(response);
+    }
+
+    @PatchMapping("/{reservationId}/complete")
+    public ResponseEntity<Void> completeReservation(
+            @PathVariable Long reservationId,
+            @AuthenticationPrincipal UserDetails userDetails) {
+
+        reservationService.completeReservation(
+                reservationId,
+                userDetails.getUsername()
+        );
+
+        return ResponseEntity.ok().build();
     }
 }

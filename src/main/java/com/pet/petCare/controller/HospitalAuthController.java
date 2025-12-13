@@ -136,6 +136,25 @@ public class HospitalAuthController {
         }
     }
 
+    @GetMapping("/me")
+    public ResponseEntity<?> getCurrentHospital(@RequestHeader("Authorization") String authorization) {
+        try {
+            String token = authorization.replace("Bearer ", "");
+            String username = jwtUtil.extractUsername(token);
+
+            if (username == null || !jwtUtil.validateToken(token, username)) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body(new ErrorResponse("유효하지 않은 토큰입니다."));
+            }
+
+            HospitalAuthResponse response = hospitalAuthService.getCurrentHospitalDetails(username);
+            return ResponseEntity.ok(response);
+        } catch (RuntimeException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorResponse(e.getMessage()));
+        }
+    }
+
     private record ErrorResponse(String message) {}
     private record SuccessResponse(String message) {}
 }

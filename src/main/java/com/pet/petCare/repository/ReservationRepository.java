@@ -16,11 +16,14 @@ import java.util.Optional;
 @Repository
 public interface ReservationRepository extends JpaRepository<Reservation, Long> {
 
+    @Query("SELECT r FROM Reservation r JOIN FETCH r.user WHERE r.hospital.id = :hospitalId ORDER BY r.reservationDate DESC, r.reservationTime DESC")
+    List<Reservation> findAllByHospitalId(@Param("hospitalId") Long hospitalId);
+
     @Query("SELECT r.reservationTime FROM Reservation r " +
             "WHERE r.hospital.id = :hospitalId " +
             "AND r.reservationDate = :date " +
             "AND r.department = :department " +
-            "AND r.status IN ('PENDING', 'CONFIRMED')")
+            "AND r.status IN (com.pet.petCare.domain.enums.ReservationStatus.PENDING, com.pet.petCare.domain.enums.ReservationStatus.CONFIRMED)")
     List<LocalTime> findBookedTimesByHospitalAndDateAndDepartment(
             @Param("hospitalId") Long hospitalId,
             @Param("date") LocalDate date,
@@ -34,8 +37,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             List<ReservationStatus> statuses
     );
 
-    Optional<Reservation> findByIdAndUserId(Long id, Long userId);
-
     List<Reservation> findByUserId(Long userId);
 
     Optional<Reservation> findByUserIdAndHospitalIdAndStatusIn(
@@ -43,4 +44,6 @@ public interface ReservationRepository extends JpaRepository<Reservation, Long> 
             Long hospitalId,
             List<ReservationStatus> statuses
     );
+
+    Optional<Reservation> findByIdAndUserId(Long id, Long userId);
 }

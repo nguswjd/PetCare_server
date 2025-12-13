@@ -383,6 +383,31 @@ public class HospitalAuthService {
         return HospitalAuthResponse.success(token, hospital);
     }
 
+    @Transactional(readOnly = true)
+    public HospitalAuthResponse getCurrentHospitalDetails(String username) {
+        Hospital hospital = hospitalRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("병원을 찾을 수 없습니다."));
+
+        return HospitalAuthResponse.builder()
+                .username(hospital.getUsername())
+                .name(hospital.getName())
+                .representativeName(hospital.getRepresentativeName())
+                .hospitalNumber(hospital.getHospitalNumber())
+                .businessRegistrationNumber(hospital.getBusinessRegistrationNumber())
+                .address(hospital.getAddress())
+                .imageUrl(hospital.getImageUrl())
+                .hasParking(hospital.isHasParking())
+                .departments(hospital.getDepartments())
+                .animalTypes(hospital.getAnimalTypes())
+                .breeds(hospital.getBreeds())
+                .holidays(hospital.getHolidays())
+                .operatingStartTime(hospital.getOperatingStartTime())
+                .operatingEndTime(hospital.getOperatingEndTime())
+                .is24Hours(hospital.isIs24Hours())
+                .breakTimes(hospital.getBreakTimes())
+                .build();
+    }
+
     private void validateSignupRequest(HospitalSignupRequest request) {
         if (request.representativeName() == null || request.representativeName().isBlank()) {
             throw new RuntimeException("대표자명은 필수항목입니다.");
