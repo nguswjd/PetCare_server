@@ -13,6 +13,7 @@ import java.time.LocalDate;
 @NoArgsConstructor
 public class ReviewResponse {
     private Long reviewId;
+    private Long hospitalId;
     private String hospitalName;
     private String username;
     private String department;
@@ -20,4 +21,5 @@ public class ReviewResponse {
     private LocalDate visitDate;
     private LocalDate createdDate;
     private Boolean revisitIntention;
+    private Boolean isMyReview;
 }

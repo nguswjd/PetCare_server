@@ -68,9 +68,11 @@ public class ReviewController {
 
     @GetMapping("/hospital/{hospitalId}")
     public ResponseEntity<List<ReviewResponse>> getHospitalReviews(
-            @PathVariable Long hospitalId
+            @PathVariable Long hospitalId,
+            @AuthenticationPrincipal UserDetails userDetails
     ) {
-        List<ReviewResponse> responses = reviewService.getHospitalReviews(hospitalId);
+        String currentUsername = (userDetails != null) ? userDetails.getUsername() : null;
+        List<ReviewResponse> responses = reviewService.getHospitalReviews(hospitalId, currentUsername);
         return ResponseEntity.ok(responses);
     }
 

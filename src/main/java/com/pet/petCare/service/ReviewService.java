@@ -40,11 +40,14 @@ public class ReviewService {
         return reviews.stream()
                 .map(review -> ReviewResponse.builder()
                         .reviewId(review.getId())
+                        .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
                         .hospitalName(review.getHospital().getName())
                         .department(review.getDepartment().name())
                         .content(review.getContent())
-                        .visitDate(null)
+                        .visitDate(review.getReservation().getReservationDate()) // [수정] 방문일자 연결
                         .createdDate(review.getCreatedAt() != null ? review.getCreatedAt().toLocalDate() : LocalDate.now())
+                        .revisitIntention(review.isRevisitIntention()) // [수정] 재방문 의사 연결
+                        .isMyReview(true)
                         .build())
                 .collect(Collectors.toList());
     }
@@ -126,24 +129,31 @@ public class ReviewService {
         reviewRepository.delete(review);
     }
 
-    public List<ReviewResponse> getHospitalReviews(Long hospitalId) {
+    public List<ReviewResponse> getHospitalReviews(Long hospitalId, String currentUsername) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
 
         List<Review> reviews = reviewRepository.findAllByHospitalOrderByCreatedAtDesc(hospital);
 
         return reviews.stream()
-                .map(review -> ReviewResponse.builder()
-                        .reviewId(review.getId())
-                        .hospitalName(review.getHospital().getName())
-                        .username(maskUsername(review.getUser().getUsername()))
-                        .department(review.getDepartment().name())
-                        .content(review.getContent())
-                        .visitDate(review.getReservation().getReservationDate())
-                        .createdDate(review.getCreatedAt() != null ?
-                                review.getCreatedAt().toLocalDate() : LocalDate.now())
-                        .revisitIntention(review.isRevisitIntention())
-                        .build())
+                .map(review -> {
+                    boolean isMyReview = currentUsername != null &&
+                            review.getUser().getUsername().equals(currentUsername);
+
+                    return ReviewResponse.builder()
+                            .reviewId(review.getId())
+                            .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
+                            .hospitalName(review.getHospital().getName())
+                            .username(maskUsername(review.getUser().getUsername()))
+                            .department(review.getDepartment().name())
+                            .content(review.getContent())
+                            .visitDate(review.getReservation().getReservationDate())
+                            .createdDate(review.getCreatedAt() != null ?
+                                    review.getCreatedAt().toLocalDate() : LocalDate.now())
+                            .revisitIntention(review.isRevisitIntention())
+                            .isMyReview(isMyReview)
+                            .build();
+                })
                 .collect(Collectors.toList());
     }
 
@@ -156,6 +166,7 @@ public class ReviewService {
         return reviews.stream()
                 .map(review -> ReviewResponse.builder()
                         .reviewId(review.getId())
+                        .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
                         .hospitalName(review.getHospital().getName())
                         .username(review.getUser().getUsername())
                         .department(review.getDepartment().name())
@@ -164,6 +175,7 @@ public class ReviewService {
                         .createdDate(review.getCreatedAt() != null ?
                                 review.getCreatedAt().toLocalDate() : LocalDate.now())
                         .revisitIntention(review.isRevisitIntention())
+                        .isMyReview(false)
                         .build())
                 .collect(Collectors.toList());
     }
