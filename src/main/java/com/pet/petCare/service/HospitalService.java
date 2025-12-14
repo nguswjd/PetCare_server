@@ -4,7 +4,9 @@ import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.domain.enums.Breed;
 import com.pet.petCare.domain.enums.Department;
 import com.pet.petCare.dto.HospitalDetailResponse;
+import com.pet.petCare.dto.HospitalSummaryResponse;
 import com.pet.petCare.repository.HospitalRepository;
+import com.pet.petCare.repository.ReviewRepository;
 import com.pet.petCare.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -13,9 +15,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,13 +24,15 @@ import java.util.stream.Collectors;
 public class HospitalService {
     private final HospitalRepository hospitalRepository;
     private final UserRepository userRepository;
+    private final ReviewRepository reviewRepository;
     private final S3Service s3Service;
     private final PasswordEncoder passwordEncoder;
 
     public HospitalDetailResponse getHospital(Long hospitalId) {
         Hospital hospital = hospitalRepository.findById(hospitalId)
                 .orElseThrow(() -> new IllegalArgumentException("병원을 찾을 수 없습니다."));
-        return HospitalDetailResponse.from(hospital);
+        Long reviewCount = reviewRepository.countByHospitalId(hospitalId);
+        return HospitalDetailResponse.from(hospital, reviewCount);
     }
 
     @Transactional(readOnly = true)
@@ -107,5 +109,39 @@ public class HospitalService {
         }
 
         hospitalRepository.delete(hospital);
+    }
+
+    @Transactional(readOnly = true)
+    public List<HospitalSummaryResponse> getTopHospitalsByReviewCount(int limit) {
+        List<Object[]> reviewCounts = reviewRepository.countReviewsByHospital();
+
+        Map<Long, Long> reviewCountMap = reviewCounts.stream()
+                .collect(Collectors.toMap(
+                        obj -> (Long) obj[0],
+                        obj -> (Long) obj[1]
+                ));
+
+        List<Long> topHospitalIds = reviewCountMap.entrySet().stream()
+                .sorted(Map.Entry.<Long, Long>comparingByValue().reversed())
+                .limit(limit)
+                .map(Map.Entry::getKey)
+                .collect(Collectors.toList());
+
+        if (topHospitalIds.isEmpty()) {
+            return new ArrayList<>();
+        }
+
+        List<Hospital> hospitals = hospitalRepository.findAllByIdIn(topHospitalIds);
+
+        Map<Long, Hospital> hospitalMap = hospitals.stream()
+                .collect(Collectors.toMap(Hospital::getId, h -> h));
+
+        return topHospitalIds.stream()
+                .filter(hospitalMap::containsKey)
+                .map(id -> HospitalSummaryResponse.from(
+                        hospitalMap.get(id),
+                        reviewCountMap.get(id)
+                ))
+                .collect(Collectors.toList());
     }
 }

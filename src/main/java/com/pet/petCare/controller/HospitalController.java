@@ -2,6 +2,7 @@ package com.pet.petCare.controller;
 
 import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.dto.HospitalDetailResponse;
+import com.pet.petCare.dto.HospitalSummaryResponse;
 import com.pet.petCare.service.HospitalService;
 import com.pet.petCare.service.SearchHistoryService;
 import com.pet.petCare.security.JwtUtil;
@@ -37,6 +38,13 @@ public class HospitalController {
 
         List<Hospital> hospitals = hospitalService.searchHospitals(keyword);
         return ResponseEntity.ok(hospitals);
+    }
+
+    @GetMapping("/api/v1/hospitals/top")
+    public ResponseEntity<List<HospitalSummaryResponse>> getTopHospitals(
+            @RequestParam(defaultValue = "10") int limit) {
+        List<HospitalSummaryResponse> topHospitals = hospitalService.getTopHospitalsByReviewCount(limit);
+        return ResponseEntity.ok(topHospitals);
     }
 
     @PostMapping(value = "/api/v1/hospitals", consumes = {"multipart/form-data"})

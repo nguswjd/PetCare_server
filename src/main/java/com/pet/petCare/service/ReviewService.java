@@ -40,13 +40,13 @@ public class ReviewService {
         return reviews.stream()
                 .map(review -> ReviewResponse.builder()
                         .reviewId(review.getId())
-                        .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
+                        .hospitalId(review.getHospital().getId())
                         .hospitalName(review.getHospital().getName())
                         .department(review.getDepartment().name())
                         .content(review.getContent())
-                        .visitDate(review.getReservation().getReservationDate()) // [수정] 방문일자 연결
+                        .visitDate(review.getReservation().getReservationDate())
                         .createdDate(review.getCreatedAt() != null ? review.getCreatedAt().toLocalDate() : LocalDate.now())
-                        .revisitIntention(review.isRevisitIntention()) // [수정] 재방문 의사 연결
+                        .revisitIntention(review.isRevisitIntention())
                         .isMyReview(true)
                         .build())
                 .collect(Collectors.toList());
@@ -142,7 +142,7 @@ public class ReviewService {
 
                     return ReviewResponse.builder()
                             .reviewId(review.getId())
-                            .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
+                            .hospitalId(review.getHospital().getId())
                             .hospitalName(review.getHospital().getName())
                             .username(maskUsername(review.getUser().getUsername()))
                             .department(review.getDepartment().name())
@@ -166,7 +166,7 @@ public class ReviewService {
         return reviews.stream()
                 .map(review -> ReviewResponse.builder()
                         .reviewId(review.getId())
-                        .hospitalId(review.getHospital().getId()) // [수정] 병원 ID 추가
+                        .hospitalId(review.getHospital().getId())
                         .hospitalName(review.getHospital().getName())
                         .username(review.getUser().getUsername())
                         .department(review.getDepartment().name())
@@ -178,6 +178,10 @@ public class ReviewService {
                         .isMyReview(false)
                         .build())
                 .collect(Collectors.toList());
+    }
+
+    public Long getReviewCountByHospitalId(Long hospitalId) {
+        return reviewRepository.countByHospitalId(hospitalId);
     }
 
     private String maskUsername(String username) {

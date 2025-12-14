@@ -34,4 +34,7 @@ public interface HospitalRepository extends JpaRepository<Hospital, Long> {
             @Param("breeds") List<Breed> breeds,
             @Param("departments") List<Department> departments
     );
+
+    @Query("SELECT h FROM Hospital h WHERE h.id IN :hospitalIds")
+    List<Hospital> findAllByIdIn(@Param("hospitalIds") List<Long> hospitalIds);
 }
