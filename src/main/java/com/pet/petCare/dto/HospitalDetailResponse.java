@@ -8,6 +8,7 @@ import lombok.Getter;
 import java.time.LocalDate;
 import java.time.LocalTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Getter
 @Builder
@@ -17,17 +18,17 @@ public class HospitalDetailResponse {
     private String address;
     private String hospitalNumber;
     private boolean hasParking;
-    private List<Department> departments;
-    private List<AnimalType> animalTypes;
-    private List<Breed> breeds;
+    private List<String> departments;
+    private List<String> animalTypes;
+    private List<String> breeds;
     private List<LocalDate> holidays;
     private LocalTime operatingStartTime;
     private LocalTime operatingEndTime;
     private boolean is24Hours;
     private List<LocalTime> breakTimes;
-    private HospitalStatus status;
+    private String status;
     private String imageUrl;
-    private HospitalOperatingStatus operatingStatus;
+    private String operatingStatus;
     private Long reviewCount;
 
     public static HospitalDetailResponse from(Hospital hospital) {
@@ -37,17 +38,24 @@ public class HospitalDetailResponse {
                 .address(hospital.getAddress())
                 .hospitalNumber(hospital.getHospitalNumber())
                 .hasParking(hospital.isHasParking())
-                .departments(hospital.getDepartments())
-                .animalTypes(hospital.getAnimalTypes())
-                .breeds(hospital.getBreeds())
+                .departments(hospital.getDepartments().stream()
+                        .map(Department::getDepartment)
+                        .collect(Collectors.toList()))
+                .animalTypes(hospital.getAnimalTypes().stream()
+                        .map(AnimalType::getDescription)
+                        .collect(Collectors.toList()))
+                .breeds(hospital.getBreeds().stream()
+                        .map(Breed::getDescription)
+                        .collect(Collectors.toList()))
                 .holidays(hospital.getHolidays())
                 .operatingStartTime(hospital.getOperatingStartTime())
                 .operatingEndTime(hospital.getOperatingEndTime())
                 .is24Hours(hospital.isIs24Hours())
                 .breakTimes(hospital.getBreakTimes())
-                .status(hospital.getStatus())
+                .status(hospital.getStatus() != null ? hospital.getStatus().name() : null)
                 .imageUrl(hospital.getImageUrl())
-                .operatingStatus(hospital.getOperatingStatus())
+                .operatingStatus(hospital.getOperatingStatus() != null ?
+                        hospital.getOperatingStatus().getDescription() : null)
                 .reviewCount(0L)
                 .build();
     }
@@ -59,17 +67,24 @@ public class HospitalDetailResponse {
                 .address(hospital.getAddress())
                 .hospitalNumber(hospital.getHospitalNumber())
                 .hasParking(hospital.isHasParking())
-                .departments(hospital.getDepartments())
-                .animalTypes(hospital.getAnimalTypes())
-                .breeds(hospital.getBreeds())
+                .departments(hospital.getDepartments().stream()
+                        .map(Department::getDepartment)
+                        .collect(Collectors.toList()))
+                .animalTypes(hospital.getAnimalTypes().stream()
+                        .map(AnimalType::getDescription)
+                        .collect(Collectors.toList()))
+                .breeds(hospital.getBreeds().stream()
+                        .map(Breed::getDescription)
+                        .collect(Collectors.toList()))
                 .holidays(hospital.getHolidays())
                 .operatingStartTime(hospital.getOperatingStartTime())
                 .operatingEndTime(hospital.getOperatingEndTime())
                 .is24Hours(hospital.isIs24Hours())
                 .breakTimes(hospital.getBreakTimes())
-                .status(hospital.getStatus())
+                .status(hospital.getStatus() != null ? hospital.getStatus().name() : null)
                 .imageUrl(hospital.getImageUrl())
-                .operatingStatus(hospital.getOperatingStatus())
+                .operatingStatus(hospital.getOperatingStatus() != null ?
+                        hospital.getOperatingStatus().getDescription() : null)
                 .reviewCount(reviewCount)
                 .build();
     }
