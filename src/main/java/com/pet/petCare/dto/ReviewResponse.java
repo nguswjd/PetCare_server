@@ -17,6 +17,8 @@ public class ReviewResponse {
     private String hospitalName;
     private String username;
     private String department;
+    private String animalType;
+    private String breed;
     private String content;
     private LocalDate visitDate;
     private LocalDate createdDate;

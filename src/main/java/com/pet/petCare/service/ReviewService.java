@@ -42,7 +42,9 @@ public class ReviewService {
                         .reviewId(review.getId())
                         .hospitalId(review.getHospital().getId())
                         .hospitalName(review.getHospital().getName())
-                        .department(review.getDepartment().name())
+                        .department(review.getDepartment().getDepartment()) // 한글 변환
+                        .animalType(review.getReservation().getAnimalType().getDescription()) // 동물 타입 추가
+                        .breed(review.getReservation().getBreed().getDescription()) // 품종 추가
                         .content(review.getContent())
                         .visitDate(review.getReservation().getReservationDate())
                         .createdDate(review.getCreatedAt() != null ? review.getCreatedAt().toLocalDate() : LocalDate.now())
@@ -145,7 +147,9 @@ public class ReviewService {
                             .hospitalId(review.getHospital().getId())
                             .hospitalName(review.getHospital().getName())
                             .username(maskUsername(review.getUser().getUsername()))
-                            .department(review.getDepartment().name())
+                            .department(review.getDepartment().getDepartment()) // 한글 변환
+                            .animalType(review.getReservation().getAnimalType().getDescription()) // 동물 타입 추가
+                            .breed(review.getReservation().getBreed().getDescription()) // 품종 추가
                             .content(review.getContent())
                             .visitDate(review.getReservation().getReservationDate())
                             .createdDate(review.getCreatedAt() != null ?
@@ -169,7 +173,9 @@ public class ReviewService {
                         .hospitalId(review.getHospital().getId())
                         .hospitalName(review.getHospital().getName())
                         .username(review.getUser().getUsername())
-                        .department(review.getDepartment().name())
+                        .department(review.getDepartment().getDepartment()) // 한글 변환
+                        .animalType(review.getReservation().getAnimalType().getDescription()) // 동물 타입 추가
+                        .breed(review.getReservation().getBreed().getDescription()) // 품종 추가
                         .content(review.getContent())
                         .visitDate(review.getReservation().getReservationDate())
                         .createdDate(review.getCreatedAt() != null ?
