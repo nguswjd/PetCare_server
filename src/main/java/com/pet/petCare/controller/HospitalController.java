@@ -3,13 +3,17 @@ package com.pet.petCare.controller;
 import com.pet.petCare.domain.Hospital;
 import com.pet.petCare.dto.HospitalDetailResponse;
 import com.pet.petCare.dto.HospitalSummaryResponse;
+import com.pet.petCare.dto.RecommendedHospitalResponse;
 import com.pet.petCare.service.HospitalService;
 import com.pet.petCare.service.SearchHistoryService;
+import com.pet.petCare.service.HospitalRecommendationService;
 import com.pet.petCare.security.JwtUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -22,6 +26,7 @@ import java.util.List;
 public class HospitalController {
     private final HospitalService hospitalService;
     private final SearchHistoryService searchHistoryService;
+    private final HospitalRecommendationService hospitalRecommendationService;
     private final JwtUtil jwtUtil;
 
     @GetMapping("/api/v1/hospital/{id}")
@@ -45,6 +50,33 @@ public class HospitalController {
             @RequestParam(defaultValue = "10") int limit) {
         List<HospitalSummaryResponse> topHospitals = hospitalService.getTopHospitalsByReviewCount(limit);
         return ResponseEntity.ok(topHospitals);
+    }
+
+    @GetMapping("/api/v1/hospitals/recommended")
+    public ResponseEntity<?> getRecommendedHospital() {
+        try {
+            Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+
+            if (authentication == null || !authentication.isAuthenticated()
+                    || authentication.getPrincipal().equals("anonymousUser")) {
+                return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                        .body("로그인이 필요한 서비스입니다.");
+            }
+
+            String username = authentication.getName();
+
+            RecommendedHospitalResponse recommendation =
+                    hospitalRecommendationService.recommendHospital(username);
+
+            return ResponseEntity.ok(recommendation);
+
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            log.error("병원 추천 중 오류 발생", e);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body("병원 추천 중 오류가 발생했습니다.");
+        }
     }
 
     @PostMapping(value = "/api/v1/hospitals", consumes = {"multipart/form-data"})
