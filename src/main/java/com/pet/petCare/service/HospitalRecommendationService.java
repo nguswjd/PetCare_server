@@ -65,13 +65,8 @@ public class HospitalRecommendationService {
         int totalScore = 0;
         List<String> reasons = new ArrayList<>();
 
-        if (user.getSpecies() != null && hospital.getAnimalTypes().contains(user.getSpecies())) {
-            totalScore += 50;
-            reasons.add("반려동물 종류 진료 가능");
-        }
-
         if (user.getBreed() != null && hospital.getBreeds().contains(user.getBreed())) {
-            totalScore += 30;
+            totalScore += 50;
             reasons.add("품종 전문 진료");
         }
 
