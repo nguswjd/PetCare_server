@@ -74,8 +74,8 @@ public class ViewHistoryService {
                         .address(hospital.getAddress())
                         .imageUrl(hospital.getImageUrl())
                         .operatingStatus(hospital.getOperatingStatus() != null
-                                ? hospital.getOperatingStatus().name()
-                                : "UNKNOWN")
+                                ? hospital.getOperatingStatus().getDescription()
+                                : "알 수 없음")
                         .visitedAt(vh.getViewedAt().toString())
                         .build());
 
