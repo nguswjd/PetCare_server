@@ -137,7 +137,24 @@ public class Hospital {
             return HospitalOperatingStatus.CLOSED;
         }
 
-        boolean isOperatingTime = !now.isBefore(operatingStartTime) && now.isBefore(operatingEndTime);
+        if (operatingStartTime.equals(operatingEndTime)) {
+            if (breakTimes != null && !breakTimes.isEmpty()) {
+                for (LocalTime breakStart : breakTimes) {
+                    LocalTime breakEnd = breakStart.plusHours(1);
+                    if (!now.isBefore(breakStart) && now.isBefore(breakEnd)) {
+                        return HospitalOperatingStatus.BREAK;
+                    }
+                }
+            }
+            return HospitalOperatingStatus.OPEN_24H;
+        }
+
+        boolean isOperatingTime;
+        if (operatingEndTime.isBefore(operatingStartTime)) {
+            isOperatingTime = !now.isBefore(operatingStartTime) || now.isBefore(operatingEndTime);
+        } else {
+            isOperatingTime = !now.isBefore(operatingStartTime) && now.isBefore(operatingEndTime);
+        }
 
         if (!isOperatingTime) {
             return HospitalOperatingStatus.CLOSED;
