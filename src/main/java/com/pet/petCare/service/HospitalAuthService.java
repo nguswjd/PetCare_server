@@ -394,24 +394,7 @@ public class HospitalAuthService {
         Hospital hospital = hospitalRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("병원을 찾을 수 없습니다."));
 
-        return HospitalAuthResponse.builder()
-                .username(hospital.getUsername())
-                .name(hospital.getName())
-                .representativeName(hospital.getRepresentativeName())
-                .hospitalNumber(hospital.getHospitalNumber())
-                .businessRegistrationNumber(hospital.getBusinessRegistrationNumber())
-                .address(hospital.getAddress())
-                .imageUrl(hospital.getImageUrl())
-                .hasParking(hospital.isHasParking())
-                .departments(hospital.getDepartments())
-                .animalTypes(hospital.getAnimalTypes())
-                .breeds(hospital.getBreeds())
-                .holidays(hospital.getHolidays())
-                .operatingStartTime(hospital.getOperatingStartTime())
-                .operatingEndTime(hospital.getOperatingEndTime())
-                .is24Hours(hospital.isIs24Hours())
-                .breakTimes(hospital.getBreakTimes())
-                .build();
+        return HospitalAuthResponse.success(null, hospital);
     }
 
     private void validateSignupRequest(HospitalSignupRequest request) {

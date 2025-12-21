@@ -2,7 +2,6 @@ package com.pet.petCare.domain;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.CreationTimestamp;
 
 import java.time.LocalDateTime;
 
@@ -25,11 +24,22 @@ public class ViewHistory {
     @Column(nullable = false)
     private Long hospitalId;
 
-    @CreationTimestamp
-    @Column(nullable = false, updatable = false)
+    @Column(nullable = false)
     private LocalDateTime viewedAt;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "hospitalId", insertable = false, updatable = false)
     private Hospital hospital;
+
+    @PrePersist
+    protected void onCreate() {
+        if (viewedAt == null) {
+            viewedAt = LocalDateTime.now();
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        viewedAt = LocalDateTime.now();
+    }
 }

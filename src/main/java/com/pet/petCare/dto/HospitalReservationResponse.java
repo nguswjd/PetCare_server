@@ -16,7 +16,9 @@ public class HospitalReservationResponse {
     private String reserverName;
     private String userPhoneNumber;
     private String animalType;
+    private String animalTypeDescription;
     private String breed;
+    private String breedDescription;
     private Integer age;
     private Integer weight;
     private String department;
@@ -39,7 +41,9 @@ public class HospitalReservationResponse {
                 .reserverName(reservation.getReserverName())
                 .userPhoneNumber(reservation.getUser().getPhoneNumber())
                 .animalType(reservation.getAnimalType().name())
+                .animalTypeDescription(reservation.getAnimalType().getDescription())
                 .breed(reservation.getBreed().name())
+                .breedDescription(reservation.getBreed().getDescription())
                 .age(reservation.getAge())
                 .weight(reservation.getWeight())
                 .department(reservation.getDepartment().getDepartment())

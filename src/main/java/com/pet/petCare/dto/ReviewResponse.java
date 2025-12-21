@@ -15,6 +15,7 @@ public class ReviewResponse {
     private Long reviewId;
     private Long hospitalId;
     private String hospitalName;
+    private String hospitalImageUrl;
     private String username;
     private String department;
     private String animalType;
